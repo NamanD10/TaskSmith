@@ -15,9 +15,26 @@ datasource db {
 }
 
 model Task {
-  id        Int     @id @default(autoincrement())
-  title     String
-  description   String?
-  status    String  @default("pending")
-  createdAt DateTime @default(now())
+  id            Int     @id @default(autoincrement())
+  title         String
+  description   String
+  type          String
+  status        TaskStatus @default(PENDING)
+  attempts      Int   @default(0)
+  maxAttempts   Int   @default(3)
+  scheduledAt   DateTime? 
+  completedAt   DateTime?
+  errorLog      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+} 
+
+enum TaskStatus {
+  PENDING
+  PROCESSING
+  RETRYING
+  COMPLETED
+  FAILED
 }
+
+//

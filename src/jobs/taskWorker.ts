@@ -1,31 +1,79 @@
 
 import { Job, Worker } from "bullmq";
 import { connection, myQueue } from "../config/redis";
-import { updateTaskStatus } from "../models/taskModel";
+import { updateTaskAttempts, updateTaskStatus } from "../models/taskModel";
 
 
-export const taskWorker = new Worker('taskQueue', async (job:Job) =>{
+export const emailWorker = new Worker(
+    'taskQueue', 
+    async (job:Job) => {
     
     const { taskId } = job.data;
+    
+    //update status to processing on 1st attempt
+    if(job.attemptsMade === 0){
+        await updateTaskStatus(taskId, 'PROCESSING');
+        console.log("Task status changed to 'PROCESSING'");
+    } else {
+        await updateTaskStatus(taskId, 'PROCESSING');
+        console.log(`Retry attempt #${job.attemptsMade} for task ${taskId}`);
+    }
 
-    await updateTaskStatus(taskId, 'in progress');
-    console.log("Task status changed to 'in progress'");
-
+    //simulating processing
     await new Promise(res => setTimeout(res, 3000));
+    //you can write your own working here
 
-    await updateTaskStatus(taskId, 'completed');
-    console.log("Task status changed to 'completed'");
-}, {connection, autorun : false}, 
+    //fake error for testing retry 
+    if(Math.random() < 0.5) throw new Error("Simulated error");
+
+    await updateTaskStatus(taskId, 'COMPLETED');
+    console.log("Task status changed to 'COMPLETED'");
+}, 
+{
+    connection,
+    autorun : false
+}, 
 );
     
-    taskWorker.on('completed', (job) => {
-        console.log(`Task ${job.id} completed by Bull MQ worker`);
-    });
-    
-    taskWorker.on('failed', (job, err) => {
-        console.error(`Task ${job?.id} failed: ${err.message}`);
-    });
+emailWorker.on('completed', async(job, err) => {
+  if(!job) return;
 
-    taskWorker.on('error', (error) =>
+  const { taskId } = job.data;
+  const attemptsMade = job.attemptsMade + 1;
+  
+  await updateTaskAttempts(taskId, attemptsMade);
+
+  console.log(`Task ${job.id} completed by Bull MQ worker`);
+    
+});
+    
+emailWorker.on('failed', async (job, err) => {
+    if (!job) {
+        console.error("Job is undefined in 'failed' event");
+        return;
+    }
+
+
+    //?? {} is the null coalescing operator which means
+    //if lhs is undefined it (taskId) falls back to {} or empty object
+    const { taskId } = job?.data ?? {};
+    const attemptsMade = job.attemptsMade + 1;  //job.attemptsMade is zero based (like array index)
+  
+    //update amt of attempts
+    await updateTaskAttempts(taskId, attemptsMade);
+
+  // if no more retries left, mark as permanently failed
+  if (job.attemptsMade >= job.opts.attempts!) {   //! at the end is non-null assertion wheer we gurantee typescript that the object/property is not null
+    if (taskId) {
+      await updateTaskStatus(taskId, 'FAILED');
+      console.error(`Task ${taskId} permanently failed after ${job.attemptsMade} attempts.`);
+    }
+  } else {
+    console.warn(`Task ${taskId} failed attempt #${job.attemptsMade}: ${err.message}`);
+  }
+});
+
+
+emailWorker.on('error', (error) =>
     console.error('Worker error' ,error)
-    ); //handling any internal worker error
+); //handling any internal worker error

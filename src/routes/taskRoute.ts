@@ -8,3 +8,5 @@ taskRouter.get('/:id', getTaskByIdHandler);
 taskRouter.post('/create', createTaskHandler);
 
 taskRouter.get('/', getTasksHandler);
+
+//add a status and a log route in this 
