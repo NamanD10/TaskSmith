@@ -9,15 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTasks = exports.getTaskById = exports.updateTaskStatus = exports.createTask = void 0;
+exports.getTasks = exports.getTaskById = exports.updateTaskAttempts = exports.updateTaskStatus = exports.createTask = void 0;
 const client_1 = require("@prisma/client");
 const extension_accelerate_1 = require("@prisma/extension-accelerate");
 const prisma = new client_1.PrismaClient().$extends((0, extension_accelerate_1.withAccelerate)());
-const createTask = (title, description) => __awaiter(void 0, void 0, void 0, function* () {
+const createTask = (title, description, type) => __awaiter(void 0, void 0, void 0, function* () {
     return yield prisma.task.create({
         data: {
             title: title,
-            description: description
+            description: description,
+            type: type,
         },
     });
 });
@@ -33,6 +34,17 @@ const updateTaskStatus = (id, status) => __awaiter(void 0, void 0, void 0, funct
     });
 });
 exports.updateTaskStatus = updateTaskStatus;
+const updateTaskAttempts = (id, attempts) => __awaiter(void 0, void 0, void 0, function* () {
+    yield prisma.task.update({
+        where: {
+            id: id
+        },
+        data: {
+            attempts: attempts
+        },
+    });
+});
+exports.updateTaskAttempts = updateTaskAttempts;
 const getTaskById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return yield prisma.task.findUnique({
         where: {

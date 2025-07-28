@@ -8,6 +8,6 @@ const app_1 = __importDefault(require("./app"));
 const dotenv_1 = __importDefault(require("dotenv"));
 process.on('uncaughtException', (err) => console.log(err));
 dotenv_1.default.config();
-taskWorker_1.taskWorker.run();
+taskWorker_1.emailWorker.run();
 const port = process.env.PORT;
 app_1.default.listen(port, () => console.log(`App listening on port ${port}`));

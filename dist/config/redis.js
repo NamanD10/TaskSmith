@@ -15,22 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.myQueue = exports.connection = void 0;
 const bullmq_1 = require("bullmq");
 const ioredis_1 = __importDefault(require("ioredis"));
-// const client = createClient({
-//     username: 'default',
-//     password: '6CwNVcym1ZXo4QtgSX1E7432CYtTNJqo',
-//     socket: {
-//         host: 'redis-15848.c232.us-east-1-2.ec2.redns.redis-cloud.com',
-//         port: 15848
-//     }
-// });
-exports.connection = new ioredis_1.default({
-    port: 15848, // Redis port
-    host: 'redis-15848.c232.us-east-1-2.ec2.redns.redis-cloud.com', // Redis host
-    username: "default", // needs Redis >= 6
-    password: '6CwNVcym1ZXo4QtgSX1E7432CYtTNJqo',
-    db: 0, // Defaults to 0,
-    maxRetriesPerRequest: null, //bull mq and io redis connection error fix 
-});
+const env_1 = require("./env");
+exports.connection = new ioredis_1.default(Object.assign(Object.assign({}, env_1.config.redis), { db: 0, maxRetriesPerRequest: null }));
 exports.connection.on('connect', () => console.log('Redis connected successfully'));
 exports.connection.on('error', err => console.log('Redis Client Error', err));
 const test = () => __awaiter(void 0, void 0, void 0, function* () {
