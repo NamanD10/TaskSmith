@@ -1,9 +1,9 @@
-// config/env.ts
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import path from 'path';
+import { pick } from 'lodash';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: 'D:/Coding/Programs/Backend/TaskSmith/.env' });
 
 const envSchema = z.object({
   REDIS_PORT: z.string().min(1),
@@ -12,13 +12,25 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string().min(1),
 });
 
-const env = envSchema.parse(process.env);
+
+const envVars = pick(process.env, [
+  'REDIS_PORT',
+  'REDIS_HOST',
+  'REDIS_USERNAME',
+  'REDIS_PASSWORD'
+]);
+
+const parsedEnv = envSchema.safeParse(envVars);
+if (!parsedEnv.success) {
+        throw new Error("Env is not parsed safely");
+        
+    }
 
 export const config = {
   redis: {
-    port: parseInt(env.REDIS_PORT, 10),
-    host: env.REDIS_HOST,
-    username: env.REDIS_USERNAME,
-    password: env.REDIS_PASSWORD,
+    port: parseInt(parsedEnv.data.REDIS_PORT, 10),
+    host: parsedEnv.data.REDIS_HOST,
+    username: parsedEnv.data.REDIS_USERNAME,
+    password: parsedEnv.data.REDIS_PASSWORD,
   },
 };

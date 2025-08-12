@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../src/app';
+import app from '../app';
 
 describe('Task API Endpoints', () => {
   let createdTaskId: number;
@@ -24,7 +24,7 @@ describe('Task API Endpoints', () => {
   // Test GET /tasks
   it('should get a list of all tasks', async () => {
     const res = await request(app).get('/tasks');
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThanOrEqual(1);
   });
@@ -32,7 +32,7 @@ describe('Task API Endpoints', () => {
   // Test GET /tasks/:id
   it('should get details of a specific task', async () => {
     const res = await request(app).get(`/tasks/${createdTaskId}`);
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('id', createdTaskId);
     expect(res.body).toHaveProperty('title', 'Test Task');
   });

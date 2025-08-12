@@ -43,7 +43,7 @@ export const getTaskByIdHandler = async (req:Request, res:Response) => {
 
     if (!parsedId.success) {
         res.status(400).json({ 
-            message: "Given parameter is not a valid number",
+            message: "Invalid id parameter",
             errors: parsedId.error, 
         });
         return;
@@ -66,7 +66,7 @@ export const getTaskStatusByIdHandler = async (req:Request, res:Response) => {
 
     if (!parsedId.success) {
         res.status(400).json({ 
-            message: "Given parameter is not a valid number",
+            message: "Invalid id parameter",
             errors: parsedId.error, 
         });
         return;

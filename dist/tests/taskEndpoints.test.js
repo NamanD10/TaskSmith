@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const app_1 = __importDefault(require("../src/app"));
+const app_1 = __importDefault(require("../app"));
 describe('Task API Endpoints', () => {
     let createdTaskId;
     // Test POST /tasks/create
@@ -34,14 +34,14 @@ describe('Task API Endpoints', () => {
     // Test GET /tasks
     it('should get a list of all tasks', () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app_1.default).get('/tasks');
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body.length).toBeGreaterThanOrEqual(1);
     }));
     // Test GET /tasks/:id
     it('should get details of a specific task', () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app_1.default).get(`/tasks/${createdTaskId}`);
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('id', createdTaskId);
         expect(res.body).toHaveProperty('title', 'Test Task');
     }));
