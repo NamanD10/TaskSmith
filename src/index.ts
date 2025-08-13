@@ -2,16 +2,16 @@ import { emailWorker } from "./jobs/taskWorker";
 import app from "./app";
 import dotenv from 'dotenv';
 
-try{
-    process.on('uncaughtException' , (err) => console.log(err));
+dotenv.config();
+emailWorker.run();
     
-    dotenv.config();
-    emailWorker.run();
+const port = process.env.PORT;
     
-    const port = process.env.PORT;
+app
+ .listen(port, () => {
+     console.log(`App listening on port ${port}`)
+ })
+ .on("error", e => console.error(e));
     
-    app.listen(port, () => console.log(`App listening on port ${port}`));
+    
 
-}catch(error){
-    console.error(error)
-}

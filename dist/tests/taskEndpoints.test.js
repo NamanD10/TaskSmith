@@ -55,6 +55,6 @@ describe('Task API Endpoints', () => {
     it('should return 404 for non-existent task', () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app_1.default).get('/tasks/999999');
         expect(res.statusCode).toBe(404);
-        expect(res.body).toHaveProperty('message', 'Task not found');
+        expect(res.body).toHaveProperty('message', 'Task Not Found');
     }));
 });

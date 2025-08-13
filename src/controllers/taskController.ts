@@ -2,6 +2,7 @@ import z from "zod";
 import { myQueue } from "../config/redis";
 import { createTask, getTaskById, getTasks } from "../models/taskModel";
 import { Request, Response } from "express";
+import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
 
 export const createTaskHandler = async (req : Request, res: Response) => {
     const taskSchema = z.object({
@@ -12,11 +13,7 @@ export const createTaskHandler = async (req : Request, res: Response) => {
 
     const parsedTask = taskSchema.safeParse(req.body);
     if(!parsedTask.success){
-        res.status(400).json({ 
-            message: "Bad request", 
-            errors: parsedTask.error,   
-        });
-        return;
+        throw new ZodError("Error while parsing task details");
     }
     const task = await createTask(parsedTask.data.title, parsedTask.data.description, parsedTask.data.type);
 
@@ -42,19 +39,14 @@ export const getTaskByIdHandler = async (req:Request, res:Response) => {
     const parsedId = idSchema.safeParse(req.params.id);
 
     if (!parsedId.success) {
-        res.status(400).json({ 
-            message: "Invalid id parameter",
-            errors: parsedId.error, 
-        });
-        return;
+        throw new BadRequestError("Invalid id parameter");
     }
 
     const id = parsedId.data;    
     const task = await getTaskById(id);
 
     if(!task){
-        res.status(404).json({message:"Task not found"});
-        return;
+        throw new NotFoundError("Task Not Found");
     }
     res.status(200).json(task);
     return;
@@ -65,11 +57,7 @@ export const getTaskStatusByIdHandler = async (req:Request, res:Response) => {
     const parsedId = idSchema.safeParse(req.params.id);
 
     if (!parsedId.success) {
-        res.status(400).json({ 
-            message: "Invalid id parameter",
-            errors: parsedId.error, 
-        });
-        return;
+        throw new BadRequestError("Invalid id parameter");
     }
     
     const id = parsedId.data;
@@ -89,8 +77,7 @@ export const getTasksHandler = async (req:Request, res:Response) => {
     const tasks = await getTasks();
 
     if(!tasks){
-        res.status(404).json({message:"Task not found"});
-        return 
+        throw new NotFoundError("Task list not found");
     }
 
     res.status(200).json(tasks);

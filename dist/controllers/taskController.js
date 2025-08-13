@@ -16,6 +16,7 @@ exports.getTasksHandler = exports.getTaskStatusByIdHandler = exports.getTaskById
 const zod_1 = __importDefault(require("zod"));
 const redis_1 = require("../config/redis");
 const taskModel_1 = require("../models/taskModel");
+const CustomError_1 = require("../core/CustomError");
 const createTaskHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const taskSchema = zod_1.default.object({
         title: zod_1.default.string().min(1),
@@ -24,11 +25,7 @@ const createTaskHandler = (req, res) => __awaiter(void 0, void 0, void 0, functi
     });
     const parsedTask = taskSchema.safeParse(req.body);
     if (!parsedTask.success) {
-        res.status(400).json({
-            message: "Bad request",
-            errors: parsedTask.error,
-        });
-        return;
+        throw new CustomError_1.ZodError("Error while parsing task details");
     }
     const task = yield (0, taskModel_1.createTask)(parsedTask.data.title, parsedTask.data.description, parsedTask.data.type);
     yield redis_1.myQueue.add('processTask', { taskId: task.id }, {
@@ -50,17 +47,12 @@ const getTaskByIdHandler = (req, res) => __awaiter(void 0, void 0, void 0, funct
     const idSchema = zod_1.default.string().regex(/^\d+$/, "ID must be a number").transform(Number);
     const parsedId = idSchema.safeParse(req.params.id);
     if (!parsedId.success) {
-        res.status(400).json({
-            message: "Invalid id parameter",
-            errors: parsedId.error,
-        });
-        return;
+        throw new CustomError_1.BadRequestError("Invalid id parameter");
     }
     const id = parsedId.data;
     const task = yield (0, taskModel_1.getTaskById)(id);
     if (!task) {
-        res.status(404).json({ message: "Task not found" });
-        return;
+        throw new CustomError_1.NotFoundError("Task Not Found");
     }
     res.status(200).json(task);
     return;
@@ -70,11 +62,7 @@ const getTaskStatusByIdHandler = (req, res) => __awaiter(void 0, void 0, void 0,
     const idSchema = zod_1.default.string().regex(/^\d+$/, "ID must be a number").transform(Number);
     const parsedId = idSchema.safeParse(req.params.id);
     if (!parsedId.success) {
-        res.status(400).json({
-            message: "Invalid id parameter",
-            errors: parsedId.error,
-        });
-        return;
+        throw new CustomError_1.BadRequestError("Invalid id parameter");
     }
     const id = parsedId.data;
     const task = yield (0, taskModel_1.getTaskById)(id);
@@ -89,8 +77,7 @@ exports.getTaskStatusByIdHandler = getTaskStatusByIdHandler;
 const getTasksHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const tasks = yield (0, taskModel_1.getTasks)();
     if (!tasks) {
-        res.status(404).json({ message: "Task not found" });
-        return;
+        throw new CustomError_1.NotFoundError("Task list not found");
     }
     res.status(200).json(tasks);
     return;
