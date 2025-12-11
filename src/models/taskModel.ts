@@ -1,52 +1,62 @@
-import { PrismaClient, TaskStatus} from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
+import { drizzle } from 'drizzle-orm/neon-http';
+import { TaskStatus } from '../types/taskStatus.schema';
+import { taskTable } from '../db/schema';
+import { InferSelectModel } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
+import dotenv from "dotenv";
+dotenv.config();
 
-const prisma = new PrismaClient().$extends(withAccelerate())
+const db = drizzle(process.env.DATABASE_URL!);
 
-export const createTask = async (title: string, description: string, type: string) =>{ 
-    return await prisma.task.create({
-        data : {
-            title: title,
-            description: description,
-            type: type,
-        },
 
-    })
+type Task = InferSelectModel<typeof taskTable>;
+
+
+export const createdTask = async (title: string, description: string, type: string, scheduledAt?: Date, repeatable?: boolean, priority?: number) =>{ 
+    const result = await db.insert(taskTable)
+    .values({ 
+        title: title,
+        description: description,
+        type: type,
+        ...(scheduledAt && {scheduledAt}),
+        ...(repeatable !== undefined && {repeatable}),
+        ...(priority && {priority})
+     }
+    ).returning();
+    return result[0];
 };
 
 export const updateTaskStatus = async (id: number, status: TaskStatus) => {
-    await prisma.task.update({
-        where : {
-            id: id
-        },
-        data: {
-            status: status 
-        },
 
-    })
+    await db.update(taskTable)
+        .set({ 
+            status: status
+        })
+        .where((
+            eq(taskTable.id, id)
+        ))
 };
 
 export const updateTaskAttempts = async (id: number, attempts: number) => {
-    await prisma.task.update({
-        where : {
-            id: id
-        },
-        data: {
-            attempts: attempts 
-        },
 
-    })
+    await db.update(taskTable)
+        .set({
+            attempts: attempts
+        })
+        .where(
+            eq(taskTable.id, id)
+        )
 };
 
 export const getTaskById = async (id: number) => {
-    return await prisma.task.findUnique({
-        where: {
-            id: id
-        }
+    return db.select({
+        
     })
+    .from(taskTable);
+    
 };
 
 export const getTasks = async () => {
-    return await prisma.task.findMany();
+    return await db.select().from(taskTable);
 };
   
