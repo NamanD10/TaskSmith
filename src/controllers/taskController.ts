@@ -1,28 +1,24 @@
-import z from "zod";
 import { myQueue } from "../config/redis";
-import { createTask, getTaskById, getTasks } from "../models/taskModel";
+import z from 'zod';
+import { createdTask, getTaskById, getTasks } from "../models/taskModel";
 import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
+import { taskSchema } from "../types/task.schema";
 
 export const createTaskHandler = async (req : Request, res: Response) => {
-    const taskSchema = z.object({
-        title: z.string().min(1),
-        description: z.string().min(2),
-        type: z.string().min(2)
-    });
 
-    const parsedTask = taskSchema.safeParse(req.body);
-    if(!parsedTask.success){
-        throw new ZodError("Error while parsing task details");
+    const task = await createdTask(req.body.title, req.body.description, req.body.type, req.body?.scheduledAt, req.body?.repeatable, req.body?.priority);
+    let delayInMS = 0;
+    if(task.scheduledAt !== null){
+        delayInMS = task.scheduledAt.getTime() - Date.now();
     }
-    const task = await createTask(parsedTask.data.title, parsedTask.data.description, parsedTask.data.type);
-
     await myQueue.add('processTask', {taskId: task.id}, {
         attempts: 3, //max retry attempts
         backoff : {
             type: 'exponential',
             delay: 5000,  //delay btw retries in ms
-        }
+        },
+        delay: delayInMS,
     });
     console.log(`Job for task id ${task.id} added`);
 
