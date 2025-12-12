@@ -49,11 +49,12 @@ export const updateTaskAttempts = async (id: number, attempts: number) => {
 };
 
 export const getTaskById = async (id: number) => {
-    return db.select({
-        
-    })
-    .from(taskTable);
+    const result = await db.
+    select()
+    .from(taskTable)
+    .where(eq(taskTable.id, id)).limit(1);
     
+    return result[0];
 };
 
 export const getTasks = async () => {
