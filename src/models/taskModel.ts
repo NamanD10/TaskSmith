@@ -1,51 +1,50 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { TaskStatus } from '../types/taskStatus.schema';
 import { taskTable } from '../db/schema';
-import { InferSelectModel } from 'drizzle-orm';
+import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 import dotenv from "dotenv";
+import { InternalError } from '../core/CustomError';
 dotenv.config();
 
 const db = drizzle(process.env.DATABASE_URL!);
 
 
-type Task = InferSelectModel<typeof taskTable>;
+type TaskUpdate = Partial<InferInsertModel<typeof taskTable>>;
 
 
-export const createdTask = async (title: string, description: string, type: string, scheduledAt?: Date, repeatable?: boolean, priority?: number) =>{ 
+export const createdTask = async (title: string, description: string, type: string, isRepeatable: boolean, scheduledAt: Date | null, priority: number, repeatPattern: string | null) =>{ 
     const result = await db.insert(taskTable)
     .values({ 
         title: title,
         description: description,
         type: type,
-        ...(scheduledAt && {scheduledAt}),
-        ...(repeatable !== undefined && {repeatable}),
-        ...(priority && {priority})
+        isRepeatable: isRepeatable,
+        scheduledAt: scheduledAt,
+        repeatPattern: repeatPattern,
+        priority: priority
+
      }
     ).returning();
     return result[0];
 };
 
-export const updateTaskStatus = async (id: number, status: TaskStatus) => {
+export const updateTask = async (id: number, data: TaskUpdate) => {
 
-    await db.update(taskTable)
-        .set({ 
-            status: status
-        })
-        .where((
-            eq(taskTable.id, id)
-        ))
-};
-
-export const updateTaskAttempts = async (id: number, attempts: number) => {
-
-    await db.update(taskTable)
+    const result = await db.update(taskTable)
         .set({
-            attempts: attempts
+            ...data,
+            updatedAt: new Date(),
         })
         .where(
             eq(taskTable.id, id)
         )
+        .returning();
+    
+    if(!result[0]){
+        throw new InternalError(`Task with id ${taskTable.id} not found in updateTask task model`);
+    }
+    return result[0];
 };
 
 export const getTaskById = async (id: number) => {
