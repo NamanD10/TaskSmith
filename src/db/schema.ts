@@ -1,4 +1,4 @@
-import { integer, pgTable, timestamp, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { integer, pgTable, timestamp, varchar, boolean, pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum(
     "statuses",
@@ -12,16 +12,25 @@ export const taskTable = pgTable(
     title: varchar({ length: 255 }).notNull(),
     description: varchar({ length: 255 }).notNull(),
     type: varchar({ length: 255 }).notNull(),
-    status: statusEnum().default("PENDING"),
+    scheduledAt: timestamp(),
+    priority: integer().default(3),
+    
     attempts: integer().default(0),
     maxAttempts: integer().default(3),
-    scheduledAt: timestamp(),
-    completedAt: timestamp(),
+
+    isRepeatable: boolean().default(false),
+    repeatPattern: varchar(),
+    nextRunAt: timestamp(),
+    lastRunAt: timestamp(),
+    repeatEnabled: boolean(),
+
     errorLog: varchar(),
+    status: statusEnum().default("PENDING"),
     createdAt: timestamp().defaultNow(),
     updatedAt: timestamp(),
+    
     }
 );
 
 
-//NEXT STEP: To write query functions
+//NEXT STEP: Push db changes using drizzle command 
