@@ -1,33 +1,45 @@
-import { myQueue } from "../config/redis";
 import z from 'zod';
 import { createdTask, getTaskById, getTasks } from "../models/taskModel";
 import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
 import { taskSchema } from "../types/task.schema";
+import { addImmediateJob, addRepeatableJob, addScheduledJob } from '../jobs/jobHandlers';
 
 export const createTaskHandler = async (req : Request, res: Response) => {
 
-    const task = await createdTask(req.body.title, req.body.description, req.body.type, req.body?.scheduledAt, req.body?.repeatable, req.body?.priority);
-    let delayInMS = 0;
-    if(task.scheduledAt !== null){
-        delayInMS = task.scheduledAt.getTime() - Date.now();
+    const {title, description, type, scheduledAt, repeatPattern, priority} = req.body;
+
+    if(scheduledAt && repeatPattern){
+        throw new BadRequestError("A task cannot be both scheduled and repeatable");
     }
-    await myQueue.add('processTask', {taskId: task.id}, {
-        attempts: 3, //max retry attempts
-        backoff : {
-            type: 'exponential',
-            delay: 5000,  //delay btw retries in ms
-        },
-        delay: delayInMS,
-    });
+
+    const task = await createdTask(
+        title,
+        description,
+        type,
+        !!repeatPattern,
+        scheduledAt ? new Date(scheduledAt) : null,
+        priority || 3,
+        repeatPattern || null,
+    );
+
+    if(task.isRepeatable){
+        await addRepeatableJob(task);
+    }
+    else if(task.scheduledAt){
+        await addScheduledJob(task);
+    }
+    else{
+        await addImmediateJob(task);
+    }
+    
     console.log(`Job for task id ${task.id} added`);
 
     res.status(201).json({
         message:`Task added successfully`, 
         task
     });
-    return ;
-
+    return;
 };
 
 export const getTaskByIdHandler = async (req:Request, res:Response) => {
