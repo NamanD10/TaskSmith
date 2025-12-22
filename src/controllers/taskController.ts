@@ -4,23 +4,23 @@ import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
 import { taskSchema } from "../types/task.schema";
 import { addImmediateJob, addRepeatableJob, addScheduledJob } from '../jobs/jobHandlers';
+import { repeat } from 'lodash';
 
 export const createTaskHandler = async (req : Request, res: Response) => {
 
-    const {title, description, type, scheduledAt, repeatPattern, priority} = req.body;
+    const {title, description, type, isRepeatable, scheduledAt, repeatPattern, priority} = req.body;
 
     if(scheduledAt && repeatPattern){
         throw new BadRequestError("A task cannot be both scheduled and repeatable");
     }
-
     const task = await createdTask(
         title,
         description,
         type,
-        !!repeatPattern,
+        isRepeatable,
         scheduledAt ? new Date(scheduledAt) : null,
-        priority || 3,
-        repeatPattern || null,
+        repeatPattern ? repeatPattern : null,
+        priority,
     );
 
     if(task.isRepeatable){
