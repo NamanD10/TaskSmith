@@ -13,7 +13,7 @@ export const taskTable = pgTable(
     description: varchar({ length: 255 }).notNull(),
     type: varchar({ length: 255 }).notNull(),
     scheduledAt: timestamp(),
-    priority: integer().default(3),
+    priority: integer().notNull().default(3),
     
     attempts: integer().default(0),
     maxAttempts: integer().default(3),
