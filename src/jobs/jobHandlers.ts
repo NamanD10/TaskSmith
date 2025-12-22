@@ -21,9 +21,10 @@ export async function addImmediateJob(task : any) {
 
 export async function addScheduledJob(task: any) {
     let delayInMS = 0;
-    if(task.scheduledAt !== null){
-        delayInMS = task.scheduledAt.getTime() - Date.now();
+    if(!task.scheduledAt){
+        throw new BadRequestError("Scheduled date field should not be null, undefined or empty");
     }
+    delayInMS = task.scheduledAt.getTime() - Date.now();
     await myQueue.add('processTask', {taskId: task.id}, {
         attempts: 3, //max retry attempts
         backoff : {
