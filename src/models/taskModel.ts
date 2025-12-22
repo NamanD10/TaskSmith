@@ -1,7 +1,6 @@
 import { drizzle } from 'drizzle-orm/neon-http';
-import { TaskStatus } from '../types/taskStatus.schema';
 import { taskTable } from '../db/schema';
-import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import { InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 import dotenv from "dotenv";
 import { InternalError } from '../core/CustomError';
@@ -13,19 +12,18 @@ const db = drizzle(process.env.DATABASE_URL!);
 type TaskUpdate = Partial<InferInsertModel<typeof taskTable>>;
 
 
-export const createdTask = async (title: string, description: string, type: string, isRepeatable: boolean, scheduledAt: Date | null, priority: number, repeatPattern: string | null) =>{ 
-    const result = await db.insert(taskTable)
-    .values({ 
-        title: title,
-        description: description,
-        type: type,
-        isRepeatable: isRepeatable,
-        scheduledAt: scheduledAt,
-        repeatPattern: repeatPattern,
-        priority: priority
-
-     }
-    ).returning();
+export const createdTask = async (title: string, description: string, type: string, isRepeatable: boolean, scheduledAt: Date | null, repeatPattern: string | null, priority: number ) =>{ 
+    const result =  await db.insert(taskTable)
+        .values({ 
+            title: title,
+            description: description,
+            type: type,
+            isRepeatable: isRepeatable,
+            scheduledAt: scheduledAt,
+            repeatPattern: repeatPattern,
+            priority : priority,
+        }
+        ).returning();  
     return result[0];
 };
 
