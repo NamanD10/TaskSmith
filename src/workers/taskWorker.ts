@@ -24,7 +24,7 @@ export const emailWorker = new Worker(
     //you can write your own working here
 
     //fake error for testing retry 
-    if(Math.random() < 0.5) throw new Error("Simulated error");
+    if(Math.random() < 0.25) throw new Error("Simulated error");
 
     await updateTask(taskId, {status: 'COMPLETED'});
     console.log("Task status changed to 'COMPLETED'");
@@ -77,7 +77,3 @@ emailWorker.on('failed', async (job, err) => {
 emailWorker.on('error', (error) =>
     console.error('Worker error' ,error)
 ); //handling any internal worker error
-
-
-
-// make it two workers one for repeatable jobs and one for other jobs
