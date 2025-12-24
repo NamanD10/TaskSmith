@@ -3,7 +3,7 @@ import { taskTable } from '../db/schema';
 import { InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 import dotenv from "dotenv";
-import { InternalError } from '../core/CustomError';
+import { InternalError, NotFoundError } from '../core/CustomError';
 dotenv.config();
 
 const db = drizzle(process.env.DATABASE_URL!);
@@ -40,7 +40,7 @@ export const updateTask = async (id: number, data: TaskUpdate) => {
         .returning();
     
     if(!result[0]){
-        throw new InternalError(`Task with id ${taskTable.id} not found in updateTask task model`);
+        throw new NotFoundError(`Task with id ${taskTable.id} not found in updateTask task model`);
     }
     return result[0];
 };
@@ -56,5 +56,17 @@ export const getTaskById = async (id: number) => {
 
 export const getTasks = async () => {
     return await db.select().from(taskTable);
+};
+
+export const deleteTask = async (id : number) => {
+    const result = await db.delete(taskTable)
+    .where(eq(taskTable.id, id))
+    .returning()
+
+    if(!result[0]){
+        throw new NotFoundError(`Task with id ${id} not found in deleteTask task model`);
+    }
+
+    return result[0];
 };
   
