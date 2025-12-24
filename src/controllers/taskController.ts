@@ -1,10 +1,9 @@
 import z from 'zod';
-import { createdTask, getTaskById, getTasks } from "../models/taskModel";
+import { createdTask, deleteTask, getTaskById, getTasks, updateTask } from "../models/taskModel";
 import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
-import { taskSchema } from "../types/task.schema";
+import { taskUpdateSchema } from "../types/task.schema";
 import { addImmediateJob, addRepeatableJob, addScheduledJob } from '../jobs/jobHandlers';
-import { repeat } from 'lodash';
 
 export const createTaskHandler = async (req : Request, res: Response) => {
 
@@ -91,3 +90,48 @@ export const getTasksHandler = async (req:Request, res:Response) => {
     res.status(200).json(tasks);
     return;
 };
+
+export const updateTaskHandler = async (req: Request, res: Response) => {
+    
+    const idSchema =  z.string().regex(/^\d+$/, "ID must be a number").transform(Number);
+    const parsedId = idSchema.safeParse(req.params.id);
+    if (!parsedId.success) {
+        throw new BadRequestError("Invalid id parameter for update route");
+    }
+
+    const parsedData = taskUpdateSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        throw new BadRequestError("Invalid body for update route");
+    }
+
+    const id = parsedId.data;  
+    const data = parsedData.data;
+    
+    const updatedTask = await updateTask(id, data);
+
+    console.log(`Task with id ${id} updated`);
+
+    res.status(201).json({
+        message:`Task updated successfully`, 
+        updatedTask
+    });
+    return;
+}
+
+export const deleteTaskHandler = async (req: Request, res: Response) => {
+    const idSchema =  z.string().regex(/^\d+$/, "ID must be a number").transform(Number);
+    const parsedId = idSchema.safeParse(req.params.id);
+    if (!parsedId.success) {
+        throw new BadRequestError("Invalid id parameter for update route");
+    }
+    const id = parsedId.data; 
+
+    const deletedTask = await deleteTask(id);
+
+    console.log(`Task with id ${id} deleted`);
+
+    res.status(200).json({
+        message: 'Task deleted successfully',
+        deletedTask
+    });
+}
