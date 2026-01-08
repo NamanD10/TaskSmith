@@ -7,7 +7,7 @@ export const validate = (schema: z.ZodType) => {
         const result = schema.safeParse(req.body);
 
         if(!result.success){
-            throw new ZodError(`Error while parsing schema ${schema}`);
+            throw new ZodError(`Error while parsing schema ${result.error}`);
         }
 
         req.body = result.data;

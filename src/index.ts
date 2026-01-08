@@ -1,4 +1,4 @@
-import { emailWorker } from "./jobs/taskWorker";
+import { emailWorker } from "./workers/taskWorker";
 import app from "./app";
 import dotenv from 'dotenv';
 

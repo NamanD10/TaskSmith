@@ -51,3 +51,5 @@ describe('Task API Endpoints', () => {
     expect(res.body).toHaveProperty('message', 'Task Not Found');
   });
 });
+
+//have to add tests for the new features too 

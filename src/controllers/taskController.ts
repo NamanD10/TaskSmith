@@ -12,6 +12,7 @@ export const createTaskHandler = async (req : Request, res: Response) => {
     if(scheduledAt && repeatPattern){
         throw new BadRequestError("A task cannot be both scheduled and repeatable");
     }
+    
     const task = await createdTask(
         title,
         description,

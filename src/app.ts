@@ -1,6 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { taskRouter } from './routes/taskRoute';
-import { errorHandler } from './middlewares/errorHandler';
 import { ApiError } from './core/AppError';
 import { InternalError } from './core/CustomError';
 

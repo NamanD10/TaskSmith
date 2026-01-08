@@ -3,24 +3,24 @@ import { Job, Worker } from "bullmq";
 import { connection, myQueue } from "../config/redis";
 import { updateTask } from "../models/taskModel";
 
-
 export const emailWorker = new Worker(
     'taskQueue', 
     async (job:Job) => {
     
     const { taskId } = job.data;
+    console.log(`Job name like this ${job.name}`)
     
     //update status to processing on 1st attempt
     if(job.attemptsMade === 0){
         await updateTask(taskId, {status: 'PROCESSING'});;
         console.log("Task status changed to 'PROCESSING'");
     } else {
-        updateTask(taskId, {status: 'PROCESSING'});
+        await updateTask(taskId, {status: 'PROCESSING'});
         console.log(`Retry attempt #${job.attemptsMade} for task ${taskId}`);
     }
 
     //simulating processing
-    await new Promise(res => setTimeout(res, 3000));
+    await new Promise(res => setTimeout(res, 100));
     //you can write your own working here
 
     //fake error for testing retry 
@@ -77,3 +77,6 @@ emailWorker.on('failed', async (job, err) => {
 emailWorker.on('error', (error) =>
     console.error('Worker error' ,error)
 ); //handling any internal worker error
+
+
+ 
