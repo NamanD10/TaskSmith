@@ -2,13 +2,14 @@
 import { Job, Worker } from "bullmq";
 import { connection, myQueue } from "../config/redis";
 import { updateTask } from "../models/taskModel";
+import processTask from "./taskProcessor";
+import { InternalError } from "../core/CustomError";
 
-export const emailWorker = new Worker(
+export const primaryWorker = new Worker(
     'taskQueue', 
     async (job:Job) => {
     
     const { taskId } = job.data;
-    console.log(`Job name like this ${job.name}`)
     
     //update status to processing on 1st attempt
     if(job.attemptsMade === 0){
@@ -19,23 +20,19 @@ export const emailWorker = new Worker(
         console.log(`Retry attempt #${job.attemptsMade} for task ${taskId}`);
     }
 
-    //simulating processing
-    await new Promise(res => setTimeout(res, 100));
-    //you can write your own working here
-
-    //fake error for testing retry 
-    if(Math.random() < 0.25) throw new Error("Simulated error");
-
-    await updateTask(taskId, {status: 'COMPLETED'});
-    console.log("Task status changed to 'COMPLETED'");
-}, 
-{
+    try{
+      await processTask(taskId);
+    } catch (error : any) {
+      throw new InternalError(`Job ${taskId} failed: ${error.message}`);
+    }
+}, {
     connection,
+    concurrency: 5,
     autorun : false
-}, 
+  }, 
 );
     
-emailWorker.on('completed', async(job, err) => {
+primaryWorker.on('completed', async(job, err) => {
   if(!job) return;
 
   const { taskId } = job.data;
@@ -47,20 +44,20 @@ emailWorker.on('completed', async(job, err) => {
     
 });
     
-emailWorker.on('failed', async (job, err) => {
-    if (!job) {
-        console.error("Job is undefined in 'failed' event");
-        return;
-    }
+primaryWorker.on('failed', async (job, err) => {
+    
+  if (!job) {
+    console.error("Job is undefined in 'failed' event");
+    return;
+  }
 
-
-    //?? {} is the null coalescing operator which means
-    //if lhs is undefined it (taskId) falls back to {} or empty object
-    const { taskId } = job?.data ?? {};
-    const attemptsMade = job.attemptsMade + 1;  //job.attemptsMade is zero based (like array index)
+  //?? {} is the null coalescing operator which means
+  //if lhs is undefined it (taskId) falls back to {} or empty object
+  const { taskId } = job?.data ?? {};
+  const attemptsMade = job.attemptsMade + 1;  //job.attemptsMade is zero based (like array index)
   
     //update amt of attempts
-    await updateTask(taskId, {attempts: attemptsMade});
+  await updateTask(taskId, {attempts: attemptsMade});
 
   // if no more retries left, mark as permanently failed
   if (job.attemptsMade >= job.opts.attempts!) {   //! at the end is non-null assertion wheer we gurantee typescript that the object/property is not null
@@ -73,10 +70,10 @@ emailWorker.on('failed', async (job, err) => {
   }
 });
 
-
-emailWorker.on('error', (error) =>
-    console.error('Worker error' ,error)
-); //handling any internal worker error
+//handling any internal worker error
+primaryWorker.on('error', (error : any) =>
+  {console.error(`Error in primary work`, error.message)}
+); 
 
 
  
