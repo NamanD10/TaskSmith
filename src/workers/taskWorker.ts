@@ -1,6 +1,5 @@
-
 import { Job, Worker } from "bullmq";
-import { connection, myQueue } from "../config/redis";
+import { connection } from "../config/redis";
 import { updateTask } from "../models/taskModel";
 import processTask from "./taskProcessor";
 import { InternalError } from "../core/CustomError";
