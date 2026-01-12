@@ -13,6 +13,15 @@ interface TaskPayload {
   repeatPattern?: string;
 }
 
+function selectTaskType() {
+  const rand = Math.random();
+
+  if(rand<0.3) return 'api-call';
+  if(rand<0.5) return 'file-operation';
+  if(rand<0.7) return 'database-operations';
+  return 'default';
+}
+
 async function createTask(payload: TaskPayload) {
   try {
     const response = await axios.post(`${API_URL}/tasks/create`, payload);
@@ -22,17 +31,20 @@ async function createTask(payload: TaskPayload) {
   }
 }
 
-async function loadTest100Tasks() {
-  console.log('🚀 Starting load test: 100 tasks...');
+async function loadTestTasks() {
+  const max = 700
+  console.log(`Starting load test: ${max} tasks...`);
   const startTime = Date.now();
   
   const promises = [];
   
-  for (let i = 1; i <= 100; i++) {
+  for (let i = 1; i <= max; i++) {
+    const selectedType = selectTaskType();
+
     const task: TaskPayload = {
-      title: `Load Test Task ${i}`,
+      title: `Load Test Task ${i} - ${selectedType}`,
       description: `This is test task number ${i}`,
-      type: 'load-test',
+      type: selectedType,
       priority: Math.floor(Math.random() * 3) + 1,
       isRepeatable: false, 
     };
@@ -50,23 +62,24 @@ async function loadTest100Tasks() {
   const successful = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
   
-  console.log('\n📊 Load Test Results:');
+  console.log('\n Load Test Results:');
   console.log('='.repeat(50));
-  console.log(`✅ Successful: ${successful}`);
-  console.log(`❌ Failed: ${failed}`);
-  console.log(`⏱️  Total Duration: ${duration}ms`);
-  console.log(`⚡ Average per task: ${(duration / 100).toFixed(2)}ms`);
-  console.log(`📈 Throughput: ${(100 / (duration / 1000)).toFixed(2)} tasks/sec`);
+  console.log(`Successful: ${successful}`);
+  console.log(`Failed: ${failed}`);
+  console.log(`Efficienct: ${(successful/max*100).toFixed(2)}%`)
+  console.log(`Total Duration: ${duration}ms`);
+  console.log(`Average per task: ${(duration / 100).toFixed(2)}ms`);
+  console.log(`Throughput: ${(100 / (duration / 1000)).toFixed(2)} tasks/sec`);
   console.log('='.repeat(50));
 }
 
 // Run the test
-loadTest100Tasks()
+loadTestTasks()
   .then(() => {
-    console.log('\n✨ Load test completed!');
+    console.log('\n Load test completed!');
     process.exit(0);
   })
   .catch(error => {
-    console.error('❌ Load test failed:', error);
+    console.error('Load test failed:', error);
     process.exit(1);
   });
