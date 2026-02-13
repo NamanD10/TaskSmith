@@ -38,11 +38,12 @@ export const updateTask = async (id: number, data: TaskUpdate) => {
             eq(taskTable.id, id)
         )
         .returning();
+
+        if(!result[0]){
+            throw new NotFoundError(`Task with id ${id} not found in updateTask task model`);
+        }
+        return result[0];
     
-    if(!result[0]){
-        throw new NotFoundError(`Task with id ${id} not found in updateTask task model`);
-    }
-    return result[0];
 };
 
 export const getTaskById = async (id: number) => {
