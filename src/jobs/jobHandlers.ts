@@ -1,7 +1,5 @@
 import { myQueue } from "../config/redis";
-import { Queue } from "bullmq";
 import parser from 'cron-parser';
-import { Task } from "../types/task.schema";
 import { BadRequestError } from "../core/CustomError";
 import { updateTask} from "../models/taskModel";
 
@@ -12,7 +10,7 @@ export async function addImmediateJob(task : any) {
             attempts: 3, 
             backoff : {
                 type: 'exponential',
-                delay: 5000,  //delay btw retries in ms
+                delay: 1000,  //delay btw retries in ms
             },
             priority: task.priority,
         }
