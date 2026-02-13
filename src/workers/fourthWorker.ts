@@ -13,7 +13,7 @@ export const fourthWorker = new Worker(
     //update status to processing on 1st attempt
     if(job.attemptsMade === 0){
         await updateTask(taskId, {status: 'PROCESSING'});;
-        console.log("Task status changed to 'PROCESSING'");
+        console.log(`Task with id ${taskId}, status changed to 'PROCESSING'`);
     } else {
         await updateTask(taskId, {status: 'PROCESSING'});
         console.log(`Retry attempt #${job.attemptsMade} for task ${taskId}`);

@@ -28,7 +28,7 @@ export default async function processTask(taskId: number) {
         }
 
         const duration = Date.now() - startTime;
-        console.log(`[${new Date().toISOString()}] Completed task ${taskId} n ${duration/1000} seconds`);
+        console.log(`[${new Date().toISOString()}] Completed task ${taskId} in ${duration/1000} seconds`);
 
         await updateTask(taskId, {
             status: 'COMPLETED',
