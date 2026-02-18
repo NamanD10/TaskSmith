@@ -2,6 +2,12 @@ import { myQueue } from "../config/redis";
 import parser from 'cron-parser';
 import { BadRequestError } from "../core/CustomError";
 import { updateTask} from "../models/taskModel";
+import { primaryWorker } from "../workers/taskWorker";
+
+// export async function clearQueue() {
+//     await myQueue.drain();
+// }
+// clearQueue();
 
 export async function addImmediateJob(task : any) { 
     await myQueue.add('processTask',
