@@ -1,4 +1,3 @@
-// test/load-test.ts
 import axios from 'axios';
 
 const API_URL = `http://localhost:3000`; 
@@ -32,7 +31,7 @@ async function createTask(payload: TaskPayload) {
 }
 
 async function loadTestTasks() {
-  const max = 700
+  const max = 100
   console.log(`Starting load test: ${max} tasks...`);
   const startTime = Date.now();
   
@@ -68,8 +67,8 @@ async function loadTestTasks() {
   console.log(`Failed: ${failed}`);
   console.log(`Efficienct: ${(successful/max*100).toFixed(2)}%`)
   console.log(`Total Duration: ${duration}ms`);
-  console.log(`Average per task: ${(duration / 100).toFixed(2)}ms`);
-  console.log(`Throughput: ${(100 / (duration / 1000)).toFixed(2)} tasks/sec`);
+  console.log(`Average per task: ${(duration / max).toFixed(2)}ms`);
+  console.log(`Throughput: ${(max / (duration / 1000)).toFixed(2)} tasks/sec`);
   console.log('='.repeat(50));
 }
 
