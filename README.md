@@ -48,13 +48,15 @@ npm install
 ```
 
 3. Configure your database and Redis connection in the `.env` file before running.
-# Sample .env file
+Sample .env file
+```bash 
 DATABASE_URL="postgres://postgres:password@db:5432/mydb"
 PORT = 3000
 REDIS_HOST = host_address
 REDIS_PORT = 6379
 REDIS_USERNAME = default
 REDIS_PASSWORD = my_pwd
+```
 
 4. Build and start the application
 ```bash
@@ -73,7 +75,7 @@ Example of a one-time immediate task
     "description": "Example task for the API",
     "type": "Email",
     "isRepeatable": false,
-    "priority" : 3    //1-3 1 being the highest
+    "priority" : 3    //1-3 (1 = highest)
   }
 ```
 Example of a scheduled task
@@ -85,7 +87,7 @@ Example of a scheduled task
     "type": "Email",
     "scheduledAt": "Jan 08 2026 16:15:00",   //date in the simple JS Date object format 
     "isRepeatable": false,
-    "priority" : 3    //1-3 1 being the highest
+    "priority" : 3    //1-3 (1 = highest)
   }
 ```
 
