@@ -12,18 +12,19 @@ export const getQueueStatsHandler = async (req: Request, res: Response) => {
                 myQueue.getDelayedCount(),
             ]);
             const total = waiting + active + completed + failed + delayed;
-    
+            
             const successRate = completed + failed > 0
             ? ((completed / (completed + failed))*100).toFixed(2)
             : 0
             
             const jobs = await myQueue.getJobs('completed', 0, 100);
-            const recentJobs = jobs.filter((job) => {
+            const recentJobs = jobs.filter((job) =>
                 job.finishedOn && 
                 (Date.now() - job.finishedOn) < 5 * 60 * 1000
-            });
+            );
+
             const throughput = (recentJobs.length / 5).toFixed(1);
-    
+
             const processedTimes = recentJobs
             .filter((job) => job.finishedOn && job.processedOn)
             .map((job) => (job.finishedOn! - job.processedOn!) / 1000);
