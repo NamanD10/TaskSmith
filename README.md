@@ -25,11 +25,143 @@ TaskSmith is a task scheduling and management application that leverages message
 - **Database:** PostgreSQL (managed via Drizzle ORM)
 - **Message Queue & Caching:** Redis with BullMQ
 
-# Prerequisites
+# Architecture 
 
-- Node.js & npm
-- PostgreSQL
-- Redis
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT / API CONSUMER                              │
+└────────────────┬──────────────────────────────────┬─────────────────────────────┘
+                 │                                  │
+                 ▼                                  ▼
+        ┌────────────────────┐           ┌──────────────────────┐
+        │   HTTP Requests    │           │   HTTP Requests      │
+        │   /tasks/create    │           │   /tasks/:id         │
+        │   /tasks           │           │   /queue/stats       │
+        │   /tasks/:id       │           │                      │
+        └─────────┬──────────┘           └──────────┬───────────┘
+                  │                                 │
+                  └─────────────────┬───────────────┘
+                                    │
+                          ┌─────────▼──────────┐
+                          │   Express Server   │
+                          │    (src/app.ts)    │
+                          └─────────┬──────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌──────────────────┐      ┌────────────────────┐      ┌─────────────────┐
+│  Task Router     │      │  Queue Router      │      │  Error Handler  │
+│  /tasks route    │      │  /queue route      │      │   Middleware    │
+└────────┬─────────┘      └────────┬───────────┘      └─────────────────┘
+         │                         │
+         ▼                         ▼
+┌──────────────────────┐  ┌──────────────────────┐
+│ Task Controller      │  │ Queue Controller     │
+│ - createTaskHandler  │  │ - getQueueStatsHandler
+│ - getTasksHandler    │  │                      │
+│ - getTaskByIdHandler │  │                      │
+│ - updateTaskHandler  │  │                      │
+│ - deleteTaskHandler  │  │                      │
+└────────┬─────────────┘  └────────┬─────────────┘
+         │                         │
+         ▼                         ▼
+┌──────────────────────────────────────────────────┐
+│        Job Handlers (src/jobs/)                  │
+│ - addImmediateJob()                              │
+│ - addScheduledJob()                              │
+│ - addRepeatableJob()                             │
+│ (Adds tasks to Redis Queue)                      │
+└────────┬─────────────────────────────┬───────────┘
+         │                             │
+         └────────────────┬────────────┘
+                          │
+                          ▼
+         ┌────────────────────────────┐
+         │   BullMQ + Redis Queue     │
+         │   (taskQueue)              │
+         │                            │
+         │  Job Types:                │
+         │  - processTask             │
+         │  - processScheduledTask    │
+         │  - processRepeatableTask   │
+         └────────────┬───────────────┘
+                      │
+         ┌────────────┴────────────┬────────────┬────────────┐
+         │                         │            │            │
+         ▼                         ▼            ▼            ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │    Workers (4 instances for concurrency = 20 jobs)      │
+    │                                                          │
+    │  - primaryWorker.ts                                     │
+    │  - secondWorker.ts                                      │
+    │  - thirdWorker.ts                                       │
+    │  - fourthWorker.ts                                      │
+    │                                                          │
+    │  Each Worker:                                           │
+    │  - Listens to 'taskQueue'                               │
+    │  - Concurrency: 5 jobs at a time                        │
+    │  - Updates job status (PROCESSING, COMPLETED, FAILED)   │
+    │  - Handles retries with exponential backoff             │
+    │  - Max attempts: 3                                       │
+    └──────────────┬───────────────────────────────────────────┘
+                   │
+                   ▼
+         ┌─────────────────────┐
+         │  Task Processor     │
+         │  (taskProcessor.ts) │
+         │                     │
+         │  Routes by type:    │
+         │  - api-call         │
+         │  - file-operation   │
+         │  - database-ops     │
+         │  - default          │
+         └──────────┬──────────┘
+                    │
+        ┌───────────┼───────────┬────────────┐
+        │           │           │            │
+        ▼           ▼           ▼            ▼
+    ┌──────┐   ┌──────┐  ┌──────────┐  ┌─────────┐
+    │ API  │   │ File │  │Database  │  │Default  │
+    │Call  │   │  Op  │  │Operations│  │Compute  │
+    └──────┘   └──────┘  └──────────┘  └─────────┘
+        │           │           │            │
+        └───────────┴───────────┴────────────┘
+                    │
+                    ▼
+         ┌──────────────────────┐
+         │  Task Model Layer    │
+         │  (src/models/)       │
+         │                      │
+         │  - createdTask()     │
+         │  - updateTask()      │
+         │  - getTaskById()     │
+         │  - getTasks()        │
+         │  - deleteTask()      │
+         └─────────┬────────────┘
+                   │
+                   ▼
+    ┌──────────────────────────────┐
+    │  Drizzle ORM                 │
+    │  (src/db/)                   │
+    │                              │
+    │  - Schema Definition         │
+    │  - Database Migrations       │
+    └──────────────┬───────────────┘
+                   │
+                   ▼
+    ┌──────────────────────────────┐
+    │   PostgreSQL Database        │
+    │                              │
+    │   Tables:                    │
+    │   - tasks (Main table)       │
+    │                              │
+    │   Statuses:                  │
+    │   - PENDING                  │
+    │   - PROCESSING               │
+    │   - RETRYING                 │
+    │   - COMPLETED                │
+    │   - FAILED                   │
+    └──────────────────────────────┘
 
 # Getting Started
 
