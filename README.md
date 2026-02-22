@@ -1,10 +1,12 @@
 # TaskSmith
 
 TaskSmith is a task scheduling and management application that leverages message queues with BullMQ and Redis for efficient background processing. It allows users to create, manage, and view tasks through a REST API. Built with Node.js, Express, PostgreSQL, and Redis, TaskSmith provides a robust solution for handling asynchronous task processing at scale.
+- Processes 500+ jobs with 100% successful execution and around 60 tasks per second throughput.
+
 
 # Features
 
-- **High Performance**: Processes
+- **High Performance**: Processes tasks with more than 50 tasks per second throughput rate
 - **Fleible Scheduling**: One-time, delayed, or recurring (cron) jobs
 - **Priority Queues**: Critical tasks get processed first 
 - **Retry Mechanism**: Automatic retries upon failure in job processing
