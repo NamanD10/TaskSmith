@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: tasksmith
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    env_file: ".env"
+    ports:
+      - "3000:3000"
+    # environment:
+      # DATABASE_URL: postgresql://postgres:password@postgres:5432/tasksmith
+      # PORT: 3000
+      # REDIS_HOST: redis
+      # REDIS_PORT: 6379
+      # REDIS_USERNAME: default
+      # REDIS_PASSWORD: ""
+    depends_on:
+      - postgres
+      - redis
+    command: npm start
+
+volumes:
+  postgres_data:
