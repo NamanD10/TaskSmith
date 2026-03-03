@@ -6,9 +6,9 @@ TaskSmith is a task scheduling and management application that leverages message
 
 # Features
 
-- **High Performance**: Processes tasks with more than 50 tasks per second throughput rate
-- **Fleible Scheduling**: One-time, delayed, or recurring (cron) jobs
-- **Priority Queues**: Critical tasks get processed first 
+- **High Performance**: Processes tasks with around 60 tasks per second throughput rate
+- **Flexible Scheduling**: One-time, delayed, or recurring (cron) jobs
+- **Priority Queues**: Critical tasks get processed first (Priority 1-3, 1 = highest)
 - **Retry Mechanism**: Automatic retries upon failure in job processing
 - **Distributed Workers**: For easy scaling of the system
 - **Persistent Storage**: All tasks are stored in a Postgres DB
@@ -156,7 +156,7 @@ Example of a scheduled task
     "title": "Example scheduled task ",
     "description": "Example scheduled task for the API",
     "type": "Email",
-    "scheduledAt": "Jan 08 2026 16:15:00",   //date in the simple JS Date object format 
+    "scheduledAt": "Jan 08 2026 16:15:00",   // Accepts JS Date string format 
     "isRepeatable": false,
     "priority" : 3    //1-3 (1 = highest)
   }
@@ -174,6 +174,13 @@ Example of a repeatable (cron job) task
     "priority" : 3    //1-3 (1 = highest)
   }
 ```
+Common cron patterns 
+- `* * * * *` - Every minute
+- `*/5 * * * *` - Every 5 minutes
+- `0 * * * *` - Every hour
+- `0 9 * * *` - Daily at 9 AM
+- `0 9 * * 1` - Every Monday at 9 AM
+- `0 0 1 * *` - First day of every month
 
 - `GET /tasks`
   - Retrieve a list of all tasks.
