@@ -1,15 +1,14 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
-import path from 'path';
 import { pick } from 'lodash';
 
-dotenv.config({ path: 'D:/Coding/Programs/Backend/TaskSmith/.env' });
+dotenv.config();
 
 const envSchema = z.object({
-  REDIS_PORT: z.string().min(1),
-  REDIS_HOST: z.string().min(1),
-  REDIS_USERNAME: z.string().min(1),
-  REDIS_PASSWORD: z.string().min(1),
+  REDIS_PORT: z.string().default('6379'),
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_USERNAME: z.string().optional().default('default'),
+  REDIS_PASSWORD: z.string().optional().default(''), // Allow empty password
 });
 
 
@@ -22,7 +21,11 @@ const envVars = pick(process.env, [
 
 const parsedEnv = envSchema.safeParse(envVars);
 if (!parsedEnv.success) {
-        throw new Error("Env is not parsed safely");
+      console.error('❌ Environment validation failed:');
+      console.error('Expected variables:', Object.keys(envSchema.shape));
+      console.error('Received:', envVars);
+      console.error('Errors:', parsedEnv.error);
+      throw new Error("Env is not parsed safely");
         
     }
 
