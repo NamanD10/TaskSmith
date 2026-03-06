@@ -134,6 +134,27 @@ REDIS_PASSWORD = my_pwd
 npm run build
 npm start
 ```
+# Docker Setup 
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/NamanD10/TaskSmith.git
+cd TaskSmith
+
+```
+2. 
+```bash 
+docker compose up
+
+```
+This will start: 
+- Redis server 
+- Tasksmith API server 
+
+The API will be available at "http://localhost:3000"
+
+NOTE- If you want to setup Postgres DB locally uncomment the commented lines in the file 'tasksmith/docker-compose.yaml'
 
 # API Endpoints
 
