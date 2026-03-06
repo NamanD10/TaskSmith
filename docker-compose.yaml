@@ -1,6 +1,16 @@
-version: '3.8'
-
 services:
+# To setup a postgres DB in your host machine 
+  # postgres:
+  #   image: postgres:15-alpine 
+  #   environment:
+  #     POSTGRES_DB: tasksmith
+  #     POSTGRES_USER: postgres 
+  #     POSTGRES_PASSWORD: password 
+  #   ports: 
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  
   redis:
     image: redis:7-alpine
     ports:
@@ -8,12 +18,18 @@ services:
 
   app:
     build: . 
-    env_file: ".env"
+    
     ports:
-      - "3000:3000"
+      - "3000:3000"                   
     environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 3000
       REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
       - redis
+      #- postgres
     command: npm start
+
+# volumes:
+#   postgres_data:
