@@ -8,6 +8,13 @@
       "when": 1766138784811,
       "tag": "0000_square_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786511495399,
+      "tag": "0001_redundant_winter_soldier",
+      "breakpoints": true
     }
   ]
 }
