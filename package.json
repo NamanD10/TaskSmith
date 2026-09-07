@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test:load": "ts-node src/test/load.test.ts",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -16,10 +16,11 @@
     "@types/dotenv": "^8.2.3",
     "@types/redis": "^4.0.11",
     "axios": "^1.13.2",
+    "better-auth": "^1.7.3",
     "bullmq": "^5.52.2",
     "cron-parser": "^5.4.0",
     "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
     "ioredis": "^5.6.1",
