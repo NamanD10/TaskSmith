@@ -1,6 +1,7 @@
 import { jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { integer, index, pgTable, timestamp, boolean, pgEnum, text } from "drizzle-orm/pg-core";
+import { randomUUID } from "crypto";
 
 export const statusEnum = pgEnum(
     "statuses",
@@ -88,16 +89,16 @@ export const verification = pgTable(
 export const task = pgTable(
     "task", 
     {
-    id: text().primaryKey(),
+    id: text().primaryKey().$defaultFn(() => randomUUID()),
     userId : text().references(() => user.id),
     title: text().notNull(),
     targetUrl : text().notNull(),
     scheduledAt: timestamp(),
     priority: integer().notNull().default(3),
 
-    headers: jsonb(),
-    reqMethod : methodEnum().default("GET"),
-    reqBody : text(),
+    headers: jsonb('headers').$type<Record<string, string>>(),
+    reqMethod : methodEnum().default("POST"),
+    reqBody: jsonb('req_body').$type<Record<string, unknown> | string>(),
     
     attempts: integer().default(0),
     maxAttempts: integer().default(3),
@@ -109,9 +110,11 @@ export const task = pgTable(
     repeatEnabled: boolean(),
 
     status: statusEnum().default("PENDING"),
-    createdAt: timestamp().defaultNow(),
-    updatedAt: timestamp(),
-    
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     }
 );
 
