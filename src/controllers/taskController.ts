@@ -9,6 +9,9 @@ export const createTaskHandler = async (req : Request<{}, {}, Task>, res: Respon
 
     const {title, targetUrl, isRepeatable, scheduledAt, repeatPattern, priority, reqMethod, reqBody, headers} = req.body;
     const userId = req.user?.id;
+    if(!userId) {
+        throw new BadRequestError("User details not found with request");
+    }
 
     if(scheduledAt && repeatPattern){
         throw new BadRequestError("A task cannot be both scheduled and repeatable");
