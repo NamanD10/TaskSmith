@@ -2,7 +2,7 @@ import { db } from '../db/db';
 import { task } from '../db/schema';
 import { and, InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
-import { InternalError, NotFoundError } from '../core/CustomError';
+import { NotFoundError } from '../core/CustomError';
 import dotenv from "dotenv";
 import { HeadersType, ReqBodyType } from '../types/task.schema';
 dotenv.config();
@@ -12,7 +12,7 @@ type TaskUpdate = Partial<InferInsertModel<typeof task>>;
 type ReqMethodType =  "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | null | undefined
 
 
-export const createdTask = async (userId: string | undefined, title: string, targetUrl: string, isRepeatable: boolean, scheduledAt: Date | null, repeatPattern: string | null, priority: number, reqMethod: ReqMethodType,  headers: HeadersType, reqBody: ReqBodyType) =>{ 
+export const createdTask = async (userId: string, title: string, targetUrl: string, isRepeatable: boolean, scheduledAt: Date | null, repeatPattern: string | null, priority: number, reqMethod: ReqMethodType,  headers: HeadersType, reqBody: ReqBodyType) =>{ 
     const result =  await db.insert(task)
         .values({ 
             userId: userId,
@@ -52,16 +52,14 @@ export const updateTask = async (userId: string, id: string, data: TaskUpdate) =
 };
 
 export const getTaskById = async (userId:string, id: string) => {
-    const result = await db.
-    select()
+    const result = await db.select()
     .from(task)
     .where(
         and(
             eq(task.userId, userId),
             eq(task.id , id)
         )
-    )
-    
+    );
     
     return result[0];
 };
