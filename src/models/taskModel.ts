@@ -9,7 +9,7 @@ dotenv.config();
 
 
 type TaskUpdate = Partial<InferInsertModel<typeof task>>;
-type ReqMethodType =  "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | null | undefined
+type ReqMethodType =  "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | undefined
 
 
 export const createdTask = async (userId: string, title: string, targetUrl: string, isRepeatable: boolean, scheduledAt: Date | null, repeatPattern: string | null, priority: number, reqMethod: ReqMethodType,  headers: HeadersType, reqBody: ReqBodyType) =>{ 
