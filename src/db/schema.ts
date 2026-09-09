@@ -90,20 +90,20 @@ export const task = pgTable(
     "task", 
     {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
-    userId : text().references(() => user.id).notNull(),
+    userId : text().notNull().references(() => user.id),
     title: text().notNull(),
     targetUrl : text().notNull(),
     scheduledAt: timestamp(),
     priority: integer().notNull().default(3),
 
     headers: jsonb('headers').$type<Record<string, string>>(),
-    reqMethod : methodEnum().default("POST"),
+    reqMethod : methodEnum().notNull().default("POST"),
     reqBody: jsonb('req_body').$type<Record<string, unknown> | string>(),
     
     attempts: integer().default(0),
     maxAttempts: integer().default(3),
 
-    isRepeatable: boolean().default(false),
+    isRepeatable: boolean().notNull().default(false),
     repeatPattern: text(),
     nextRunAt: timestamp(),
     lastRunAt: timestamp(),
