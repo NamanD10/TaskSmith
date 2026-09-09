@@ -2,7 +2,6 @@ import { myQueue } from "../config/redis";
 import parser from 'cron-parser';
 import { BadRequestError } from "../core/CustomError";
 import { updateTask} from "../models/taskModel";
-import { primaryWorker } from "../workers/taskWorker";
 
 // export async function clearQueue() {
 //     await myQueue.drain();
@@ -11,7 +10,7 @@ import { primaryWorker } from "../workers/taskWorker";
 
 export async function addImmediateJob(task : any) { 
     await myQueue.add('processTask',
-        {taskId: task.id},
+        {userId: task.userId, taskId: task.id},
         {
             attempts: 3, 
             backoff : {
@@ -29,7 +28,7 @@ export async function addScheduledJob(task: any) {
         throw new BadRequestError("Scheduled date field should not be null, undefined or empty");
     }
     delayInMS = task.scheduledAt.getTime() - Date.now();
-    await myQueue.add('processScheduledTask', {taskId: task.id}, {
+    await myQueue.add('processScheduledTask', {userId: task.userId, taskId: task.id}, {
         attempts: 3, //max retry attempts
         backoff : {
             type: 'exponential',
@@ -47,7 +46,7 @@ export async function addRepeatableJob(task: any) {
 
     await myQueue.add(
         'processRepeatableTask',
-        {taskId: task.id},
+        {userId: task.userId, taskId: task.id},
         {
             repeat: {
                 pattern: task.repeatPattern,
@@ -65,7 +64,7 @@ export async function addRepeatableJob(task: any) {
     const interval = parser.parse(task.repeatPattern);
     const nextRun = interval.next().toDate();
 
-    await updateTask(task.id, {
-        nextRunAt: nextRun
+    await updateTask(task.userId, task.id, {
+        nextRunAt: nextRun,
     });
 }
