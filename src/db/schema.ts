@@ -90,7 +90,7 @@ export const task = pgTable(
     "task", 
     {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
-    userId : text().references(() => user.id),
+    userId : text().references(() => user.id).notNull(),
     title: text().notNull(),
     targetUrl : text().notNull(),
     scheduledAt: timestamp(),
