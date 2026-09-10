@@ -3,12 +3,12 @@ import z  from "zod";
 const headersSchema = z.record(
     z.string().min(1).max(200),
     z.string().max(2000))
-.optional();
+.nullish();
 
 const reqBodySchema = z.union([
   z.record(z.string(), z.unknown()),   // JSON object body — the common case
   z.string().max(50_000),               // raw string body (XML, plain text, etc.)
-]).optional();
+]).nullish();
 
 export const taskSchema = z.object({
     userId: z.string().min(1),
