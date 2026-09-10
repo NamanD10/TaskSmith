@@ -121,14 +121,12 @@ export const task = pgTable(
 export const response = pgTable(
     "response",
     {
-
-        id : text().primaryKey(),
+        id : text().primaryKey().$defaultFn(() => randomUUID()),
         taskId : text().references(() => task.id).notNull(),
         executionDate : timestamp(),
-        attemptNumber : integer().default(0),
+        attemptNumber : integer().default(1),
         statusCode : integer(),
-        statusMessage : text(),
-            
+        statusMessage : text(),      
     }
 )
 
