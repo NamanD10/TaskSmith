@@ -1,10 +1,9 @@
 import { db } from '../db/db';
 import { task } from '../db/schema';
-import { and, InferInsertModel } from 'drizzle-orm';
-import { eq } from 'drizzle-orm';
+import { and, InferInsertModel, eq } from 'drizzle-orm';
 import { NotFoundError } from '../core/CustomError';
-import dotenv from "dotenv";
 import { HeadersType, ReqBodyType } from '../types/task.schema';
+import dotenv from "dotenv";
 dotenv.config();
 
 
