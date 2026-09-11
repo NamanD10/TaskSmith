@@ -8,19 +8,25 @@ export const primaryWorker = new Worker(
     'taskQueue', 
     async (job:Job) => {
     
-    const { taskId } = job.data;
+    const { userId, taskId } = job.data;
     
     //update status to processing on 1st attempt
     if(job.attemptsMade === 0){
-        await updateTask(taskId, {status: 'PROCESSING'});;
+        await updateTask(userId, taskId, {
+          status: 'PROCESSING',
+          lastRunAt : new Date()
+        });
         console.log(`Task with id ${taskId}, status changed to 'PROCESSING'`);
     } else {
-        await updateTask(taskId, {status: 'PROCESSING'});
+        await updateTask(userId, taskId, {
+          status: 'PROCESSING',
+          lastRunAt : new Date()
+        });
         console.log(`Retry attempt #${job.attemptsMade} for task ${taskId}`);
     }
 
     try{
-      await processTask(taskId);
+      await processTask(userId, taskId);
     } catch (error : any) {
       throw new InternalError(`Job ${taskId} failed: ${error.message}`);
     }
@@ -34,10 +40,10 @@ export const primaryWorker = new Worker(
 primaryWorker.on('completed', async(job, err) => {
   if(!job) return;
 
-  const { taskId } = job.data;
+  const { userId, taskId } = job.data;
   const attemptsMade = job.attemptsMade + 1;
   
-  await updateTask(taskId, {attempts: attemptsMade});
+  await updateTask(userId, taskId, {attempts: attemptsMade});
 
   console.log(`Task ${job.id} completed by Bull MQ worker`);
     
@@ -52,16 +58,16 @@ primaryWorker.on('failed', async (job, err) => {
 
   //?? {} is the null coalescing operator which means
   //if lhs is undefined it (taskId) falls back to {} or empty object
-  const { taskId } = job?.data ?? {};
+  const { userId, taskId } = job?.data ?? {};
   const attemptsMade = job.attemptsMade + 1;  //job.attemptsMade is zero based (like array index)
   
     //update amt of attempts
-  await updateTask(taskId, {attempts: attemptsMade});
+  await updateTask(userId, taskId, {attempts: attemptsMade});
 
   // if no more retries left, mark as permanently failed
   if (job.attemptsMade >= job.opts.attempts!) {   //! at the end is non-null assertion wheer we gurantee typescript that the object/property is not null
     if (taskId) {
-      await updateTask(taskId, {status: 'FAILED'});
+      await updateTask(userId, taskId, {status: 'FAILED'});
       console.error(`Task ${taskId} permanently failed after ${job.attemptsMade} attempts.`);
     }
   } else {
