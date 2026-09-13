@@ -1,4 +1,4 @@
-import { jsonb } from "drizzle-orm/pg-core";
+import { jsonb, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { integer, index, pgTable, timestamp, boolean, pgEnum, text } from "drizzle-orm/pg-core";
 import { randomUUID } from "crypto";
@@ -123,10 +123,14 @@ export const response = pgTable(
     {
         id : text().primaryKey().$defaultFn(() => randomUUID()),
         taskId : text().references(() => task.id).notNull(),
-        executionDate : timestamp(),
-        attemptNumber : integer().default(1),
+        executionDate : timestamp().notNull().defaultNow(),
         statusCode : integer(),
-        statusMessage : text(),      
+        statusMessage : text(),    
+        durationMs : integer(),
+        responseBody : text(),
+        responseHeaders : jsonb().$type<Record<string, string>>(),
+        errorCode : varchar({length : 50}),
+        errorMessage : text()  
     }
 )
 
