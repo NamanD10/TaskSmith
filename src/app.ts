@@ -5,19 +5,19 @@ import { InternalError } from './core/CustomError';
 import { queueRouter } from './routes/queueRoute';
 import { toNodeHandler } from "better-auth/node";
 import { auth } from './lib/auth';
-import dotenv from 'dotenv';
 import { requireAuth } from './middlewares/auth';
-// import { primaryWorker } from "./workers/taskWorker";
-// import { secondWorker } from "./workers/secondWorker";
-// import { thirdWorker } from "./workers/thirdWorker";
-// import { fourthWorker } from "./workers/fourthWorker";
+import { primaryWorker } from "./workers/taskWorker";
+import { secondWorker } from "./workers/secondWorker";
+import { thirdWorker } from "./workers/thirdWorker";
+import { fourthWorker } from "./workers/fourthWorker";
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-// primaryWorker.run();
-// secondWorker.run();
-// thirdWorker.run();
-// fourthWorker.run();
+primaryWorker.run();
+secondWorker.run();
+thirdWorker.run();
+fourthWorker.run();
 
 const app = express();
 const port = process.env.PORT;
