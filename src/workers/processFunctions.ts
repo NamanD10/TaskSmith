@@ -31,6 +31,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
             statusMessage : response.statusText, 
             durationMs
           });
+          return savedResponse;
         }  
         else if(response.status >= 300 && response.status < 500) {
           //save with response body, headers, errorCode, errorMsg 
@@ -43,6 +44,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
             responseBody : JSON.stringify(response.data).slice(0, 2000),
             responseHeaders : response.headers
           });
+          return savedResponse;
         }
         else {
           const savedResponse = await insertResponse({
@@ -54,6 +56,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
             responseBody : JSON.stringify(response.data).slice(0, 2000),
             responseHeaders : response.headers
           }); 
+          return savedResponse;
         }    
        
     } catch (error : any) {
