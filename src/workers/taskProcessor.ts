@@ -17,7 +17,8 @@ export default async function processTask(userId: string, taskId: string) {
     try {
         await makeApiCall(taskId, apiTask);
         //cant send apiTask to the function due to missing id field in task.schema (zod)
-        const duration = Date.now() - startTime;
+        const endTime = new Date();
+        const duration = endTime.getTime() - startTime;
         console.log(`[${new Date().toISOString()}] Completed task ${taskId} in ${duration/1000} seconds`);
         
         let nextRun = null;
@@ -33,11 +34,10 @@ export default async function processTask(userId: string, taskId: string) {
         await updateTask(userId, taskId, {
             status: 'COMPLETED',
             nextRunAt : nextRun,
+            lastRunAt : endTime
         });
     } 
     catch(error : any) {
-
         throw new InternalError(`Task ${taskId} failed: ${error.message}`);
-    
     }
-}
+};
