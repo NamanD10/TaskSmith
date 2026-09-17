@@ -4,7 +4,7 @@ import { updateTask } from "../models/taskModel";
 import processTask from "./taskProcessor";
 import { InternalError } from "../core/CustomError";
 
-export const primaryWorker = new Worker(
+export const thirdWorker = new Worker(
     'taskQueue', 
     async (job:Job) => {
     
@@ -37,7 +37,7 @@ export const primaryWorker = new Worker(
   }, 
 );
     
-primaryWorker.on('completed', async(job, err) => {
+thirdWorker.on('completed', async(job, err) => {
   if(!job) return;
 
   const { userId, taskId } = job.data;
@@ -49,7 +49,7 @@ primaryWorker.on('completed', async(job, err) => {
     
 });
     
-primaryWorker.on('failed', async (job, err) => {
+thirdWorker.on('failed', async (job, err) => {
     
   if (!job) {
     console.error("Job is undefined in 'failed' event");
@@ -76,6 +76,6 @@ primaryWorker.on('failed', async (job, err) => {
 });
 
 //handling any internal worker error
-primaryWorker.on('error', (error : any) =>
+thirdWorker.on('error', (error : any) =>
   {console.error(`Error in primary work`, error.message)}
 ); 
