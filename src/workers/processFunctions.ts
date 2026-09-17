@@ -1,45 +1,76 @@
 import axios from "axios";
-import path from "path";
-import fs from "fs/promises";
-import { InternalError } from "../core/CustomError";
-import { getTasks } from "../models/taskModel";
+import { BadRequestError, InternalError } from "../core/CustomError";
+import { Task } from "../types/task.schema";
+import { insertResponse } from "../models/responseModel";
 
-export async function makeApiCall () {
-    try{
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');
-    } catch(error) {
-        throw new InternalError(`Can not call API during processing task ${error}`);
-    }
+export async function makeApiCall (taskId : string, task : Partial<Task>) {
+  try{
+        if(!task.reqMethod) {
+            throw new BadRequestError("Property reqMethod is needed");
+        }
+        const startDate = new Date();
+        const response = await axios({
+            method : task.reqMethod.toLowerCase(),
+            url : task.targetUrl,
+            headers : task.headers ?? undefined,
+            data : task.reqBody ?? undefined,
+            validateStatus : () => true,
+            timeout : 10_000,
+            maxContentLength: 1_000_000, 
+            maxBodyLength: 1_000_000,
+        });
+  
+        const durationMs = Date.now() - startDate.getTime();
+        const endDate = new Date();
+
+        if(response.status >= 200 && response.status < 300){
+          const savedResponse = await insertResponse({
+            taskId, 
+            executionDate : endDate, 
+            statusCode : response.status, 
+            statusMessage : response.statusText, 
+            durationMs
+          });
+        }  
+        else if(response.status >= 300 && response.status < 500) {
+          //save with response body, headers, errorCode, errorMsg 
+          const savedResponse = await insertResponse({
+            taskId, 
+            executionDate : endDate, 
+            statusCode : response.status, 
+            statusMessage : response.statusText, 
+            durationMs, 
+            responseBody : JSON.stringify(response.data).slice(0, 2000),
+            responseHeaders : response.headers
+          });
+        }
+        else {
+          const savedResponse = await insertResponse({
+            taskId, 
+            executionDate : endDate, 
+            statusCode : response.status, 
+            statusMessage : response.statusText, 
+            durationMs, 
+            responseBody : JSON.stringify(response.data).slice(0, 2000),
+            responseHeaders : response.headers
+          }); 
+        }    
+       
+    } catch (error : any) {
+      
+      const savedResponse = await insertResponse({
+        taskId,
+        executionDate : new Date(),
+        statusCode : 0,
+        statusMessage : "",
+        durationMs : 0,
+        responseBody : null,
+        responseHeaders : null,
+        errorCode : error.code,
+        errorMessage : error.message
+      });
+
+    throw new InternalError(`Unexpected error calling ${task.targetUrl}: ${error}`);
+  } 
 };
 
-export async function performFileOperation(task: any) {
-    const tempDir = path.join(__dirname, '../temp');
-    const filePath = path.join(tempDir, `task-${task.id}.txt`);
-
-    try{
-        const data = `Task ${task.id} ${task.title}\n`.repeat(500);
-        await fs.writeFile(filePath, data);
-        const content = await fs.readFile(filePath, 'utf-8');
-        await fs.unlink(filePath);
-    }
-    catch(error) {
-        throw new InternalError(`File operation failed while processing job ${error}`);
-    }
-};
-
-export async function performDatabaseOperation() {
-    const relatedTasks = await getTasks();
-
-    await new Promise(res => setTimeout(res, 200));
-};
-
-export async function performDefaultWork(task : any) {
-    const workload = task.priority || 3;
-    const iterations = workload*50000;
-
-    let result = 0;
-    for (let i=0; i<iterations; i++){
-        result += Math.sqrt(i) * Math.sin(i) * Math.cos(i);
-    }
-
-};
