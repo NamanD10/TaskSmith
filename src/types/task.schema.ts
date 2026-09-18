@@ -21,7 +21,6 @@ export const taskSchema = z.object({
     reqMethod: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
     headers: headersSchema,
     reqBody: reqBodySchema
-
 });
 
 export const taskUpdateSchema = taskSchema.partial();
