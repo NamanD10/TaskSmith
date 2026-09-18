@@ -81,4 +81,4 @@ primaryWorker.on('error', (error : any) =>
 ); 
 
 
- 
+console.log("HEllo HI");
