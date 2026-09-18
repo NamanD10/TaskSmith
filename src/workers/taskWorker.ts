@@ -79,6 +79,3 @@ primaryWorker.on('failed', async (job, err) => {
 primaryWorker.on('error', (error : any) =>
   {console.error(`Error in primary work`, error.message)}
 ); 
-
-
-console.log("HEllo HI");
