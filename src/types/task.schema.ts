@@ -17,7 +17,15 @@ const reqBodySchema = z.union([
 export const taskSchema = z.object({
   userId: z.string().min(1, "userId is required"),
   title: z.string().min(1, "Title is required"),
-  targetUrl: z.string().min(1, "Target URL is required"),
+  targetUrl: z
+    .url({ protocol : /^https?$/, error : "Target URL can be http or https only"})
+    .refine((url) => {
+        const hostname = new URL(url).hostname;
+        const blocked = ["localhost", "127.0.0.1", "0.0.0.0", "::1"];
+        return !blocked.includes(hostname) && !hostname.startsWith("192.168.") && !hostname.startsWith("10.");
+    },
+    {error : "TargetUrl cannot point to a private/internal address"}
+  ),  
   isRepeatable: z.boolean({
     message: "isRepeatable must be a boolean value",
   }),
