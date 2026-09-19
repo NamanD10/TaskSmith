@@ -1,26 +1,39 @@
 import z  from "zod";
 
 const headersSchema = z.record(
-    z.string().min(1).max(200),
-    z.string().max(2000))
-.nullish();
+  z.string().min(1, "Header name must not be empty").max(200, "Header name must be at most 200 characters"),
+  z.string().max(2000, "Header value must be at most 2000 characters")
+).nullish();
 
 const reqBodySchema = z.union([
-  z.record(z.string(), z.unknown()),   // JSON object body — the common case
-  z.string().max(50_000),               // raw string body (XML, plain text, etc.)
-]).nullish();
+  z.record(z.string(), z.unknown(), {
+    message: "Request body must be a JSON object",
+  }), // JSON object body — the common case
+  z.string().max(50_000, "Raw string body must be at most 50,000 characters"),
+], {
+  message: "Request body must be either a JSON object or a string",
+}).nullish();
 
 export const taskSchema = z.object({
-    userId: z.string().min(1),
-    title: z.string().min(1),
-    targetUrl: z.string().min(1),
-    isRepeatable: z.boolean(),
-    scheduledAt: z.coerce.date().optional(),
-    repeatPattern: z.string().optional(),
-    priority: z.number(),
-    reqMethod: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-    headers: headersSchema,
-    reqBody: reqBodySchema
+  userId: z.string().min(1, "userId is required"),
+  title: z.string().min(1, "Title is required"),
+  targetUrl: z.string().min(1, "Target URL is required"),
+  isRepeatable: z.boolean({
+    message: "isRepeatable must be a boolean value",
+  }),
+  scheduledAt: z.coerce.date({
+    message: "scheduledAt must be a valid date",
+  }).optional(),
+  repeatPattern: z.string().min(1, "repeatPattern must not be empty").optional(),
+  priority: z
+    .number({ message: "Priority must be a number" })
+    .min(1, "Priority must be at least 1")
+    .max(3, "Priority must be at most 3"),
+  reqMethod: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"], {
+    message: "reqMethod must be one of GET, POST, PUT, PATCH, DELETE",
+  }),
+  headers: headersSchema,
+  reqBody: reqBodySchema,
 });
 
 export const taskUpdateSchema = taskSchema.partial();
