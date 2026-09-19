@@ -1,4 +1,5 @@
 import { BadRequestError, InternalError } from "../core/CustomError";
+import { user } from "../db/schema";
 import { getTaskById, updateTask } from "../models/taskModel";
 import { makeApiCall } from "./processFunctions";
 import parser from 'cron-parser';
@@ -16,7 +17,7 @@ export default async function processTask(userId: string, taskId: string) {
 
     try {
         await makeApiCall(taskId, apiTask);
-        //cant send apiTask to the function due to missing id field in task.schema (zod)
+        //cant just send apiTask to the function due to missing id field in task.schema (zod)
         const endTime = new Date();
         const duration = endTime.getTime() - startTime;
         console.log(`[${new Date().toISOString()}] Completed task ${taskId} in ${duration/1000} seconds`);
@@ -29,8 +30,11 @@ export default async function processTask(userId: string, taskId: string) {
 
             const interval = parser.parse(task.repeatPattern);
             nextRun = interval.next().toDate();
+            await updateTask(userId, taskId, {
+                attempts : 0
+            });
         }
-
+        
         await updateTask(userId, taskId, {
             status: 'COMPLETED',
             nextRunAt : nextRun,
