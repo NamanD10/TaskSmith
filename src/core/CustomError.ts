@@ -14,7 +14,7 @@ export class NotFoundError extends ApiError{
 
 export class ZodError extends ApiError{
     constructor(message: string="Zod Error"){
-        super(ErrorType.ZOD, 500, message);
+        super(ErrorType.ZOD, 400, message);
     }
 }
 
