@@ -7,7 +7,11 @@ export const validate = (schema: z.ZodType) => {
         const result = schema.safeParse(req.body);
 
         if(!result.success){
-            throw new ZodError(`Error while parsing schema ${result.error}`);
+            const errors = result.error.issues.map((issue) => ({
+                path : issue.path.join("."),
+                message : issue.message
+            }));
+            throw new ZodError(`Error while parsing schema ${JSON.stringify(errors)}`);
         }
 
         req.body = result.data;
