@@ -18,6 +18,7 @@
     "axios": "^1.13.2",
     "better-auth": "^1.7.3",
     "bullmq": "^5.52.2",
+    "cors": "^2.8.6",
     "cron-parser": "^5.4.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.2",
