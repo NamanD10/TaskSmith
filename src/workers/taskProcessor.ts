@@ -22,24 +22,27 @@ export default async function processTask(userId: string, taskId: string) {
         const duration = endTime.getTime() - startTime;
         console.log(`[${new Date().toISOString()}] Completed task ${taskId} in ${duration/1000} seconds`);
         
-        let nextRun = null;
+        
         if(task.isRepeatable){
             if(!task.repeatPattern){
                 throw new BadRequestError("Repeat pattern is required for repeatable jobs");
             }
 
             const interval = parser.parse(task.repeatPattern);
-            nextRun = interval.next().toDate();
+            let nextRun = interval.next().toDate();
             await updateTask(userId, taskId, {
-                attempts : 0
+                attempts : 1,
+                status : 'PENDING',
+                nextRunAt : nextRun, 
+                lastRunAt : endTime
             });
         }
-        
-        await updateTask(userId, taskId, {
+        else {
+            await updateTask(userId, taskId, {
             status: 'COMPLETED',
-            nextRunAt : nextRun,
             lastRunAt : endTime
-        });
+            });
+        }
     } 
     catch(error : any) {
         throw new InternalError(`Task ${taskId} failed: ${error.message}`);
