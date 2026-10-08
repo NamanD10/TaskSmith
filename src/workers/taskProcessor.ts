@@ -16,7 +16,7 @@ export default async function processTask(userId: string, taskId: string) {
     const startTime = Date.now();
 
     try {
-        await makeApiCall(taskId, apiTask);
+        const response = await makeApiCall(taskId, apiTask);
         //cant just send apiTask to the function due to missing id field in task.schema (zod)
         const endTime = new Date();
         const duration = endTime.getTime() - startTime;
@@ -38,10 +38,18 @@ export default async function processTask(userId: string, taskId: string) {
             });
         }
         else {
-            await updateTask(userId, taskId, {
-            status: 'COMPLETED',
-            lastRunAt : endTime
-            });
+            if(response.statusCode! >= 300){
+                await updateTask(userId, taskId, {
+                    status : 'FAILED',
+                    lastRunAt : endTime
+                });
+            }
+            else {
+                await updateTask(userId, taskId, {
+                status: 'COMPLETED',
+                lastRunAt : endTime
+                });
+            }
         }
     } 
     catch(error : any) {
