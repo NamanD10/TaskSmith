@@ -34,7 +34,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
           return savedResponse;
         }  
         else if(response.status >= 300 && response.status < 500) {
-          //save with response body, headers, errorCode, errorMsg 
+
           const savedResponse = await insertResponse({
             taskId, 
             executionDate : endDate, 
@@ -47,6 +47,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
           return savedResponse;
         }
         else {
+          //if status code is 5XX then we send email
           const savedResponse = await insertResponse({
             taskId, 
             executionDate : endDate, 
@@ -56,6 +57,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
             responseBody : JSON.stringify(response.data).slice(0, 2000),
             responseHeaders : response.headers
           }); 
+          //add email sending function here
           return savedResponse;
         }    
        
