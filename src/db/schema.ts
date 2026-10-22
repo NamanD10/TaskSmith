@@ -90,7 +90,7 @@ export const task = pgTable(
     "task", 
     {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
-    userId : text().notNull().references(() => user.id),
+    userId : text().notNull().references(() => user.id, {onDelete : "cascade", onUpdate : "cascade"}),
     title: text().notNull(),
     targetUrl : text().notNull(),
     scheduledAt: timestamp(),
@@ -122,8 +122,8 @@ export const response = pgTable(
     "response",
     {
         id : text().primaryKey().$defaultFn(() => randomUUID()),
-        taskId : text().references(() => task.id).notNull(),
-        userId : text().references(() => user.id).notNull(),
+        taskId : text().references(() => task.id, {onDelete : "cascade", onUpdate : "cascade"}).notNull(),
+        userId : text().references(() => user.id, {onDelete : "cascade", onUpdate : "cascade"}).notNull(),
         executionDate : timestamp().notNull().defaultNow(),
         statusCode : integer(),
         statusMessage : text(),    
