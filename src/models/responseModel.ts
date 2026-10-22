@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { response } from "../db/schema";
 import z from 'zod';
@@ -10,6 +11,7 @@ type ResponseHeadersType = z.infer<typeof resHeadersSchema>;
 
 type InsertResponseParams = {
     taskId : string;
+    userId : string;
     executionDate : Date;
     statusCode : number;
     statusMessage : string;
@@ -22,6 +24,7 @@ type InsertResponseParams = {
 
 export const insertResponse = async ({
     taskId,
+    userId,
     executionDate, 
     statusCode, 
     statusMessage, 
@@ -34,6 +37,7 @@ export const insertResponse = async ({
     const result = await db.insert(response) 
         .values({
             taskId: taskId,
+            userId : userId,
             executionDate: executionDate,
             statusCode: statusCode,
             statusMessage: statusMessage,
