@@ -123,6 +123,7 @@ export const response = pgTable(
     {
         id : text().primaryKey().$defaultFn(() => randomUUID()),
         taskId : text().references(() => task.id).notNull(),
+        userId : text().references(() => user.id).notNull(),
         executionDate : timestamp().notNull().defaultNow(),
         statusCode : integer(),
         statusMessage : text(),    
@@ -131,7 +132,8 @@ export const response = pgTable(
         responseHeaders : jsonb().$type<Record<string, string>>(),
         errorCode : varchar({length : 50}),
         errorMessage : text()  
-    }
+    },
+    (table) => [index("response_user_date_idx").on(table.userId, table.executionDate)]
 )
 
 export const userRelations = relations(user, ({ many }) => ({
