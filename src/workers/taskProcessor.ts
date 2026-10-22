@@ -16,7 +16,7 @@ export default async function processTask(userId: string, taskId: string) {
     const startTime = Date.now();
 
     try {
-        const response = await makeApiCall(taskId, apiTask);
+        const response = await makeApiCall(taskId, userId, apiTask);
         //cant just send apiTask to the function due to missing id field in task.schema (zod)
         const endTime = new Date();
         const duration = endTime.getTime() - startTime;

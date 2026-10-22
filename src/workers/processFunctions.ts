@@ -3,7 +3,7 @@ import { BadRequestError, InternalError } from "../core/CustomError";
 import { Task } from "../types/task.schema";
 import { insertResponse } from "../models/responseModel";
 
-export async function makeApiCall (taskId : string, task : Partial<Task>) {
+export async function makeApiCall (taskId : string, userId : string, task : Partial<Task>) {
   try{
         if(!task.reqMethod) {
             throw new BadRequestError("Property reqMethod is needed");
@@ -26,6 +26,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
         if(response.status >= 200 && response.status < 300){
           const savedResponse = await insertResponse({
             taskId, 
+            userId,
             executionDate : endDate, 
             statusCode : response.status, 
             statusMessage : response.statusText, 
@@ -37,6 +38,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
 
           const savedResponse = await insertResponse({
             taskId, 
+            userId,
             executionDate : endDate, 
             statusCode : response.status, 
             statusMessage : response.statusText, 
@@ -50,6 +52,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
           //if status code is 5XX then we send email
           const savedResponse = await insertResponse({
             taskId, 
+            userId,
             executionDate : endDate, 
             statusCode : response.status, 
             statusMessage : response.statusText, 
@@ -65,6 +68,7 @@ export async function makeApiCall (taskId : string, task : Partial<Task>) {
       
       const savedResponse = await insertResponse({
         taskId,
+        userId,
         executionDate : new Date(),
         statusCode : 0,
         statusMessage : "",
