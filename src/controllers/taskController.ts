@@ -1,5 +1,5 @@
 import z from 'zod';
-import { createdTask, deleteTask, getTaskById, getTasks, updateTask } from "../models/taskModel";
+import { createdTask, deleteTask, getTaskById, getTasks, getTasksByType, getUpcomingRuns, updateTask } from "../models/taskModel";
 import { Request, Response } from "express";
 import { BadRequestError, NotFoundError, ZodError } from "../core/CustomError";
 import { Task, taskUpdateSchema } from "../types/task.schema";
@@ -108,6 +108,25 @@ export const getTasksHandler = async (req:Request, res:Response) => {
 
     res.status(200).json(tasks);
     return;
+};
+
+export const getTasksByTypeHandler = async (req : Request, res : Response) => {
+
+    const user = req.user;
+    if(!user){
+        throw new BadRequestError("User not found in request");
+    }
+
+    const grouped = await getTasksByType(user.id);
+    res.status(200).json(grouped);  
+};
+
+export const getUpcomingRunsHandler = async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) throw new BadRequestError("User not found in request");
+
+    const upcomingRuns = await getUpcomingRuns(user.id, 5);
+    res.status(200).json(upcomingRuns);
 };
 
 export const updateTaskHandler = async (req: Request, res: Response) => {
