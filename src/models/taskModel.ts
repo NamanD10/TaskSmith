@@ -1,6 +1,6 @@
 import { db } from '../db/db';
 import { task } from '../db/schema';
-import { and, InferInsertModel, eq } from 'drizzle-orm';
+import { and, InferInsertModel, eq, isNull, isNotNull, count, asc } from 'drizzle-orm';
 import { NotFoundError } from '../core/CustomError';
 import { HeadersType, ReqBodyType } from '../types/task.schema';
 import dotenv from "dotenv";
@@ -67,6 +67,52 @@ export const getTasks = async (userId: string) => {
     return await db.select()
     .from(task)
     .where(eq(task.userId, userId));
+};
+
+export const getTasksByType = async (userId: string) => {
+    const [immediate, scheduled, repeatable] = await Promise.all([
+        db.select({ count: count() }).from(task).where(
+            and(
+                eq(task.userId, userId),
+                eq(task.isRepeatable, false),
+                isNull(task.scheduledAt)
+            )
+        ),
+        db.select({ count: count() }).from(task).where(
+            and(
+                eq(task.userId, userId),
+                eq(task.isRepeatable, false),
+                isNotNull(task.scheduledAt)
+            )
+        ),
+        db.select({ count: count() }).from(task).where(
+            and(
+                eq(task.userId, userId),
+                eq(task.isRepeatable, true)
+            )
+        ),
+    ]);
+
+    return { immediate, scheduled, repeatable };
+};
+
+export const getUpcomingRuns = async (userId: string, limit = 5) => {
+    return await db
+        .select({
+            title: task.title,
+            targetUrl: task.targetUrl,
+            reqMethod: task.reqMethod,
+            nextRunAt: task.nextRunAt,
+        })
+        .from(task)
+        .where(
+            and(
+                eq(task.userId, userId),
+                isNotNull(task.nextRunAt)
+            )
+        )
+        .orderBy(asc(task.nextRunAt))
+        .limit(limit);
 };
 
 export const deleteTask = async (userId: string, id: string) => {
