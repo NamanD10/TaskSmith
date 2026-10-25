@@ -12,6 +12,7 @@ import { secondWorker } from "./workers/secondWorker";
 import { thirdWorker } from "./workers/thirdWorker";
 import { fourthWorker } from "./workers/fourthWorker";
 import dotenv from 'dotenv';
+import { statsRouter } from './routes/statsRoute';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use(express.json());
 
 app.use('/tasks', requireAuth, taskRouter);
 app.use('/queue', requireAuth, queueRouter);
+app.use('/stats', requireAuth, statsRouter);
 
 app.use((err: Error, req : Request, res: Response, next: NextFunction) => {
     if(err instanceof ApiError) {
