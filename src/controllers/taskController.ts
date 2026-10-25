@@ -7,7 +7,8 @@ import { addImmediateJob, addRepeatableJob, addScheduledJob } from '../jobs/jobH
 
 export const createTaskHandler = async (req : Request<{}, {}, Task>, res: Response) => {
 
-    const {userId, title, targetUrl, isRepeatable, scheduledAt, repeatPattern, priority, reqMethod, reqBody, headers} = req.body;
+    const userId = req.user!.id;
+    const {title, targetUrl, isRepeatable, scheduledAt, repeatPattern, priority, reqMethod, reqBody, headers} = req.body;
     
     if(!userId) {
         throw new BadRequestError("User details not found with request");
