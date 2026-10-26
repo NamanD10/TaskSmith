@@ -114,10 +114,12 @@ export const getAverageDuration = async (userId: string) => {
 export const getRecentExecutions = async (userId: string, limit = 10) => {
     return await db
         .select({
+            id : task.id,
             title: task.title,
             targetUrl: task.targetUrl,
             reqMethod: task.reqMethod,
             statusCode: response.statusCode,
+            durationMs : response.durationMs,
             executionDate: response.executionDate,
         })
         .from(response)
