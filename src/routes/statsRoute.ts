@@ -5,9 +5,9 @@ import { getAverageDurationHandler, getExecutionCountLast24hHandler, getExecutio
 
 export const statsRouter = express.Router();
 
-statsRouter.get('/stats/task-type', asyncHandler(getTasksByTypeHandler));
-statsRouter.get('/stats/upcoming-runs', asyncHandler(getUpcomingRunsHandler));
-statsRouter.get('/stats/success-rate', asyncHandler(getExecutionStatsHandler));
-statsRouter.get('/stats/last-24h', asyncHandler(getExecutionCountLast24hHandler));
-statsRouter.get('/stats/avg-duration', asyncHandler(getAverageDurationHandler));
-statsRouter.get('/stats/recent-executions', asyncHandler(getRecentExecutionsHandler));
+statsRouter.get('/task-type', asyncHandler(getTasksByTypeHandler));
+statsRouter.get('/upcoming-runs', asyncHandler(getUpcomingRunsHandler));
+statsRouter.get('/success-rate', asyncHandler(getExecutionStatsHandler));
+statsRouter.get('/last-24h', asyncHandler(getExecutionCountLast24hHandler));
+statsRouter.get('/avg-duration', asyncHandler(getAverageDurationHandler));
+statsRouter.get('/recent-executions', asyncHandler(getRecentExecutionsHandler));
