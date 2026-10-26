@@ -1,6 +1,6 @@
 import { db } from '../db/db';
 import { task } from '../db/schema';
-import { and, InferInsertModel, eq, isNull, isNotNull, count, asc } from 'drizzle-orm';
+import { and, InferInsertModel, eq, isNull, isNotNull, count, asc, sql } from 'drizzle-orm';
 import { NotFoundError } from '../core/CustomError';
 import { HeadersType, ReqBodyType } from '../types/task.schema';
 import dotenv from "dotenv";
@@ -70,30 +70,20 @@ export const getTasks = async (userId: string) => {
 };
 
 export const getTasksByType = async (userId: string) => {
-    const [immediate, scheduled, repeatable] = await Promise.all([
-        db.select({ count: count() }).from(task).where(
-            and(
-                eq(task.userId, userId),
-                eq(task.isRepeatable, false),
-                isNull(task.scheduledAt)
-            )
-        ),
-        db.select({ count: count() }).from(task).where(
-            and(
-                eq(task.userId, userId),
-                eq(task.isRepeatable, false),
-                isNotNull(task.scheduledAt)
-            )
-        ),
-        db.select({ count: count() }).from(task).where(
-            and(
-                eq(task.userId, userId),
-                eq(task.isRepeatable, true)
-            )
-        ),
-    ]);
+    const [row] = await db
+        .select({
+            immediate: sql<number>`(count(*) filter (where ${task.isRepeatable} = false and ${task.scheduledAt} is null))::int`,
+            scheduled: sql<number>`(count(*) filter (where ${task.isRepeatable} = false and ${task.scheduledAt} is not null))::int`,
+            repeatable: sql<number>`(count(*) filter (where ${task.isRepeatable} = true))::int`,
+        })
+        .from(task)
+        .where(eq(task.userId, userId));
 
-    return { immediate, scheduled, repeatable };
+    return {
+        immediate: row?.immediate ?? 0,
+        scheduled: row?.scheduled ?? 0,
+        repeatable: row?.repeatable ?? 0,
+    };
 };
 
 export const getUpcomingRuns = async (userId: string, limit = 5) => {
