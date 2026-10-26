@@ -20,7 +20,7 @@ export async function addImmediateJob(task : any) {
             priority: task.priority,
         }
     );
-}
+};
 
 export async function addScheduledJob(task: any) {
     let delayInMS = 0;
@@ -37,7 +37,11 @@ export async function addScheduledJob(task: any) {
         delay: delayInMS,
         priority: task.priority,
     });
-}
+    
+    await updateTask(task.userId, task.id, {
+        nextRunAt : task.scheduledAt
+    }); 
+};
 
 export async function addRepeatableJob(task: any) { 
     if(!task.repeatPattern){
@@ -67,4 +71,4 @@ export async function addRepeatableJob(task: any) {
     await updateTask(task.userId, task.id, {
         nextRunAt: nextRun,
     });
-}
+};
