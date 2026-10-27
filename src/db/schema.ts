@@ -133,7 +133,14 @@ export const response = pgTable(
         errorCode : varchar({length : 50}),
         errorMessage : text()  
     },
-    (table) => [index("response_user_date_idx").on(table.userId, table.executionDate)]
+    (table) => [
+      index("response_user_date_idx").on(table.userId, table.executionDate),
+      index("response_task_user_date_idx").on(
+        table.userId,
+        table.taskId,
+        table.executionDate.desc()
+      ),
+    ]
 )
 
 export const userRelations = relations(user, ({ many }) => ({
