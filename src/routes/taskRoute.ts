@@ -1,6 +1,7 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { createTaskHandler, getTasksHandler, getTaskByIdHandler, updateTaskHandler, deleteTaskHandler } from '../controllers/taskController';
+import { getTaskResponsesHandler } from '../controllers/responseController';
 import { validate } from '../middlewares/validate';
 import { taskSchema, taskUpdateSchema } from '../types/task.schema';
 
@@ -11,3 +12,4 @@ taskRouter.post('/create', validate(taskSchema), asyncHandler(createTaskHandler)
 taskRouter.get('/', asyncHandler(getTasksHandler));
 taskRouter.put('/:id', validate(taskUpdateSchema), asyncHandler(updateTaskHandler));
 taskRouter.delete('/:id', asyncHandler(deleteTaskHandler));
+taskRouter.get('/:id/responses', asyncHandler(getTaskResponsesHandler));
