@@ -1,22 +1,12 @@
-import { getAllResponse, getAverageDuration, getExecutionCountLast24h, getExecutionStats, getResponse, getRecentExecutions } from "../models/responseModel";
+import { getAverageDuration, getExecutionCountLast24h, getExecutionStats, getRecentExecutions, getTaskExecutionSummary, getTaskResponses } from "../models/responseModel";
 import { Response, Request } from "express";
 import { BadRequestError, NotFoundError } from "../core/CustomError";
+import z from "zod"; 
 
-export const getResponseHandler = async (req : Request, res : Response) => {
-    const taskId = req.params.id;     //or either from request parameters depending upon our decision
-
-    if (!taskId) {
-        throw new BadRequestError("Taks Id required to get response details");
-    }
-
-    const response = await getResponse(taskId);
-    if(!response) {
-        throw new NotFoundError(`Response with task id ${taskId} not found`);
-    }
-
-    res.status(200).json(response);
-    return;
-};
+const executionsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  cursor: z.coerce.date().optional(),
+});
 
 export const getExecutionStatsHandler = async (req : Request, res : Response) => {
     const user = req.user;
@@ -53,18 +43,22 @@ export const getRecentExecutionsHandler = async (req: Request, res: Response) =>
     res.status(200).json(executions);
 };
 
-export const getAllResponseHandler = async (req : Request, res : Response) => {
-    const taskId = req.params.id;     //or either from request parameters depending upon our decision
+export const getTaskResponsesHandler = async (req: Request, res: Response) => {
+  const user = req.user;
+  if (!user) throw new BadRequestError("User not found in request");
 
-    if (!taskId) {
-        throw new BadRequestError("Taks Id required to get response details");
-    }
+  const taskId = req.params.id;
+  if (!taskId) throw new BadRequestError("Task id is required");
 
-    const response = await getAllResponse(taskId);
-    if(!response) {
-        throw new NotFoundError(`Response with task id ${taskId} not found`);
-    }
+  const parsed = executionsQuerySchema.safeParse(req.query);
+  if (!parsed.success) throw new BadRequestError("Invalid limit or cursor");
+  const { limit, cursor } = parsed.data;
 
-    res.status(200).json(response);
-    return;
+  // The summary only needs to be sent with the first page
+  const [page, summary] = await Promise.all([
+    getTaskResponses(user.id, taskId, limit, cursor),
+    cursor ? Promise.resolve(undefined) : getTaskExecutionSummary(user.id, taskId),
+  ]);
+
+  res.status(200).json({ ...page, summary });
 };
