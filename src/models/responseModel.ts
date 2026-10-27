@@ -1,4 +1,4 @@
-import { eq, count, sql, and, gt, gte, desc } from "drizzle-orm";
+import { eq, count, sql, and, gt, gte, desc, lt } from "drizzle-orm";
 import { db } from "../db/db";
 import { response, task } from "../db/schema";
 import z from 'zod';
@@ -129,19 +129,51 @@ export const getRecentExecutions = async (userId: string, limit = 10) => {
         .limit(limit);
 };
 
-export const getResponse = async (taskId : string) => {
-    const result = await db.select()
+export const getTaskResponses = async (
+  userId: string,
+  taskId: string,
+  limit = 20,
+  cursor?: Date
+) => {
+  const rows = await db
+    .select()
     .from(response)
-    .where(eq(response.taskId, taskId))
-    .limit(1);
+    .where(
+      and(
+        eq(response.userId, userId),
+        eq(response.taskId, taskId),
+        cursor ? lt(response.executionDate, cursor) : undefined
+      )
+    )
+    .orderBy(desc(response.executionDate))
+    .limit(limit + 1); // one extra row tells us whether another page exists
 
-    return result;
-}; //need to create the handeller and route file for response 
+  const hasMore = rows.length > limit;
+  const items = hasMore ? rows.slice(0, limit) : rows;
 
-export const getAllResponse = async  (taskId : string) => {
-    const results = await db.select()
+  return {
+    items,
+    nextCursor: hasMore ? items[items.length - 1].executionDate.toISOString() : null,
+  };
+};
+
+export const getTaskExecutionSummary = async (userId: string, taskId: string) => {
+  const [row] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      successful: sql<number>`(count(*) filter (where ${response.statusCode} between 200 and 299))::int`,
+      avgDurationMs: sql<number>`coalesce(avg(${response.durationMs}) filter (where ${response.durationMs} > 0), 0)::float8`,
+    })
     .from(response)
-    .where(eq(response.taskId, taskId));
+    .where(and(eq(response.userId, userId), eq(response.taskId, taskId)));
 
-    return results;
+  const total = row?.total ?? 0;
+  const successful = row?.successful ?? 0;
+
+  return {
+    total,
+    successful,
+    successRate: total > 0 ? Number(((successful / total) * 100).toFixed(2)) : 0,
+    averageDurationMs: Number((row?.avgDurationMs ?? 0).toFixed(2)),
+  };
 };
