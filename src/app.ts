@@ -45,6 +45,7 @@ app.use((err: Error, req : Request, res: Response, next: NextFunction) => {
         ApiError.handle(new InternalError(), res);
     }
     //this throws an error "Error: Cannot set headers after they are sent to the client"
+    return;
 });
 
 
