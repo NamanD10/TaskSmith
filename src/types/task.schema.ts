@@ -15,7 +15,6 @@ const reqBodySchema = z.union([
 }).nullish();
 
 export const taskSchema = z.object({
-  userId: z.string().min(1, "userId is required"),
   title: z.string().min(1, "Title is required"),
   targetUrl: z
     .url({ protocol : /^https?$/, error : "Target URL can be http or https only"})
