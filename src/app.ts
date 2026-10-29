@@ -7,18 +7,19 @@ import { queueRouter } from './routes/queueRoute';
 import { toNodeHandler } from "better-auth/node";
 import { auth } from './lib/auth';
 import { requireAuth } from './middlewares/auth';
-import { primaryWorker } from "./workers/taskWorker";
-import { secondWorker } from "./workers/secondWorker";
-import { thirdWorker } from "./workers/thirdWorker";
-import { fourthWorker } from "./workers/fourthWorker";
+import { createWorker } from "./workers/taskWorker";
 import dotenv from 'dotenv';
 import { statsRouter } from './routes/statsRoute';
 
 dotenv.config();
 
+const primaryWorker = createWorker();
 primaryWorker.run();
-secondWorker.run();
+const secondaryWorker = createWorker();
+secondaryWorker.run();
+const thirdWorker = createWorker();
 thirdWorker.run();
+const fourthWorker = createWorker();
 fourthWorker.run();
 
 const app = express();
