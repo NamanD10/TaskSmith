@@ -23,9 +23,12 @@ const fourthWorker = createWorker();
 fourthWorker.run();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT!;
+const FRONTEND_URL = process.env.FRONTEND_URL!;
+const FRONTEND_CUSTOM_URL = process.env.FRONTEND_CUSTOM_URL!;
+
 app.use(cors({
-    origin : ["http://localhost:3000"],
+    origin : ["http://localhost:3000", FRONTEND_URL, FRONTEND_CUSTOM_URL],
     credentials : true
 }));
 
@@ -44,7 +47,6 @@ app.use((err: Error, req : Request, res: Response, next: NextFunction) => {
     else {
         ApiError.handle(new InternalError(), res);
     }
-    //this throws an error "Error: Cannot set headers after they are sent to the client"
     return;
 });
 
