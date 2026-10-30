@@ -7,7 +7,7 @@
     "test:load": "ts-node src/test/load.test.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/app.js"
   },
   "author": "",
   "license": "ISC",
