@@ -11,4 +11,4 @@ RUN npm install
 
 COPY . /app/
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["node", "dist/app.js"]
