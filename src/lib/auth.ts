@@ -2,10 +2,15 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import * as schema from '../db/schema';
 import { db } from "../db/db";
+import dotenv from "dotenv";
+
+dotenv.config();
+const FRONTEND_URL = process.env.FRONTEND_URL!;
+const FRONTEND_CUSTOM_URL = process.env.FRONTEND_CUSTOM_URL!;
 
 export const auth = betterAuth({
     
-    trustedOrigins: ["http://localhost:5143", "http://localhost:8008", "http://localhost:3000"],
+    trustedOrigins: ["http://localhost:3000", FRONTEND_URL, FRONTEND_CUSTOM_URL],
 
     database: drizzleAdapter(db, {
         provider: "pg",
