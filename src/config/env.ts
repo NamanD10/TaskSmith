@@ -21,13 +21,12 @@ const envVars = pick(process.env, [
 
 const parsedEnv = envSchema.safeParse(envVars);
 if (!parsedEnv.success) {
-      console.error('❌ Environment validation failed:');
+      console.error('Environment validation failed:');
       console.error('Expected variables:', Object.keys(envSchema.shape));
       console.error('Received:', envVars);
       console.error('Errors:', parsedEnv.error);
       throw new Error("Env is not parsed safely");
-        
-    }
+}
 
 export const config = {
   redis: {
