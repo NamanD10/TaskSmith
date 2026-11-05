@@ -7,10 +7,12 @@ import dotenv from "dotenv";
 dotenv.config();
 const FRONTEND_URL = process.env.FRONTEND_URL!;
 const FRONTEND_CUSTOM_URL = process.env.FRONTEND_CUSTOM_URL!;
+const origins = [FRONTEND_URL, FRONTEND_CUSTOM_URL];
+if (process.env.NODE_ENV !== "production") origins.push("http://localhost:3000");
 
 export const auth = betterAuth({
     
-    trustedOrigins: ["http://localhost:3000", FRONTEND_URL, FRONTEND_CUSTOM_URL],
+    trustedOrigins: origins,
 
     database: drizzleAdapter(db, {
         provider: "pg",
